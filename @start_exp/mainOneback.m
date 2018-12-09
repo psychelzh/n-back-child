@@ -11,6 +11,8 @@ function mainOneback(user, part)
 PsychDefaultSetup(2);
 % set the start up screen to black
 old_visdb = Screen('Preference', 'VisualDebugLevel', 1);
+% do not skip synchronization test to make sure timing is accurate
+old_sync = Screen('Preference', 'SkipSyncTests', 0);
 % screen selection
 screen_to_display = max(Screen('Screens'));
 % open a window and set its background color as gray
@@ -284,6 +286,7 @@ ListenChar(1);
 ShowCursor;
 % restore preferences
 Screen('Preference', 'VisualDebugLevel', old_visdb);
+Screen('Preference', 'SkipSyncTests', old_sync);
 Priority(priority_old);
 end
 
