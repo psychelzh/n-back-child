@@ -1,3 +1,4 @@
+function mainOneback(user, part)
 % Copyright (C) 2018, Liang Zhang - All Rights Reserved.
 % @author      Liang Zhang <psychelzh@outlook.com>
 % @description This script is used to display stimuli in fMRI research
@@ -5,18 +6,7 @@
 
 % please mannually make sure Psychtoolbox is installed
 
-%% clear jobs for a script
-clear
-sca;
-
-%% ---- participant information recording ----
-id = 1;
-name = "test";
-sex = "male";
-time = datetime;
-participant_info = table(id, name, sex, time);
-
-%% ---- configure screen and window ----
+% ---- configure screen and window ----
 % setup default level of 2
 PsychDefaultSetup(2);
 % set the start up screen to black
@@ -33,7 +23,7 @@ Screen('BlendFunction', window_ptr, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 Screen('TextFont', window_ptr, 'SimHei');
 Screen('TextSize', window_ptr, 64);
 
-%% ---- timing information ----
+% ---- timing information ----
 % get inter flip interval
 ifi = Screen('GetFlipInterval', window_ptr);
 % prestimulus fixation
@@ -51,12 +41,12 @@ pres_vector = [repelem("fixation", fix_frames), ...
     repelem("isi", isi_frames)];
 n_frames_trial = length(pres_vector);
 
-%% ---- keyboard settings ----
+% ---- keyboard settings ----
 exit_key = KbName('Escape');
 left_key = KbName('LeftArrow');
 right_key = KbName('RightArrow');
 
-%% ---- prepare stimuli ----
+% ---- prepare stimuli ----
 N_IMAGES = 10;
 stim_image_ids = 1:N_IMAGES;
 [stim_image_mats, ~, stim_image_alpha] = cellfun(@imread, ...
@@ -68,7 +58,7 @@ for stim_i = 1:N_IMAGES
 end
 stim_textures = cellfun(@(img) Screen('MakeTexture', window_ptr, img), stim_image_mats);
 
-%% ---- prapare sequence ----
+% ---- prapare sequence ----
 % constants used for sequence generation
 N_TRIALS = 160; % 2 means change and stay each once
 STIM_TYPE_FILLER = "filler";
@@ -165,13 +155,13 @@ end
 stim_type_seq_full = vertcat(STIM_TYPE_FILLER, stim_type_seq);
 stim_img_seq_full = vertcat(stim_img_filler, stim_img_seq);
 
-%% ----prepare data recording table ----
+% ----prepare data recording table ----
 rec_vars = {'stim', 'trial_start_time', 'stim_onset_time', 'type', 'cresp', 'resp', 'acc', 'rt'};
 recordings = cell2table( ...
     repmat({nan, nan, nan, strings, strings, strings, -1, 0}, N_TRIALS + 1, 1), ...
     'VariableNames', rec_vars);
 
-%% ---- present stimuli ----
+% ---- present stimuli ----
 % set priority to the top
 priority_old = Priority(MaxPriority(window_ptr));
 % instruction
@@ -295,3 +285,19 @@ ShowCursor;
 % restore preferences
 Screen('Preference', 'VisualDebugLevel', old_visdb);
 Priority(priority_old);
+end
+
+function [spl, idx] = sample(set, k, exclude)
+% SAMPLE randomly selects from SET without replacement
+
+if nargin < 3
+    exclude = [];
+end
+set = setdiff(set, exclude);
+length_set = length(set);
+if nargin < 2
+    k = length(set);
+end
+idx = randperm(length_set, k);
+spl = set(idx);
+end
