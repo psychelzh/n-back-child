@@ -4,14 +4,14 @@ classdef start_exp < matlab.apps.AppBase
     properties (Access = public)
         MainUI         matlab.ui.Figure
         UserPanel      matlab.ui.container.Panel
-        UserRegister   matlab.ui.control.Button
-        UserModify     matlab.ui.control.Button
-        UserSexLabel   matlab.ui.control.Label
-        UserSex        matlab.ui.control.DropDown
-        UserNameLabel  matlab.ui.control.Label
-        UserName       matlab.ui.control.EditField
         UserIdLabel    matlab.ui.control.Label
         UserId         matlab.ui.control.NumericEditField
+        UserNameLabel  matlab.ui.control.Label
+        UserName       matlab.ui.control.EditField
+        UserSexLabel   matlab.ui.control.Label
+        UserSex        matlab.ui.control.DropDown
+        UserRegister   matlab.ui.control.Button
+        UserModify     matlab.ui.control.Button
         TestingPanel   matlab.ui.container.Panel
         Practice       matlab.ui.control.Button
         Testing        matlab.ui.control.Button
@@ -158,54 +158,6 @@ classdef start_exp < matlab.apps.AppBase
             app.UserPanel.FontWeight = 'bold';
             app.UserPanel.Position = [42 112 260 179];
 
-            % Create UserRegister
-            app.UserRegister = uibutton(app.UserPanel, 'push');
-            app.UserRegister.ButtonPushedFcn = createCallbackFcn(app, @UserRegisterButtonPushed, true);
-            app.UserRegister.BackgroundColor = [1 1 1];
-            app.UserRegister.FontName = 'SimHei';
-            app.UserRegister.FontWeight = 'bold';
-            app.UserRegister.Position = [148 20 69 22];
-            app.UserRegister.Text = '录入';
-
-            % Create UserModify
-            app.UserModify = uibutton(app.UserPanel, 'push');
-            app.UserModify.ButtonPushedFcn = createCallbackFcn(app, @UserModifyButtonPushed, true);
-            app.UserModify.BackgroundColor = [1 1 1];
-            app.UserModify.FontName = 'SimHei';
-            app.UserModify.FontWeight = 'bold';
-            app.UserModify.Position = [41 20 69 22];
-            app.UserModify.Text = '修改';
-
-            % Create UserSexLabel
-            app.UserSexLabel = uilabel(app.UserPanel);
-            app.UserSexLabel.HorizontalAlignment = 'right';
-            app.UserSexLabel.FontName = 'SimHei';
-            app.UserSexLabel.FontWeight = 'bold';
-            app.UserSexLabel.Tooltip = {'下拉选择被试的性别。'};
-            app.UserSexLabel.Position = [51 57 30 22];
-            app.UserSexLabel.Text = '性别';
-
-            % Create UserSex
-            app.UserSex = uidropdown(app.UserPanel);
-            app.UserSex.Items = {'男', '女'};
-            app.UserSex.ValueChangedFcn = createCallbackFcn(app, @UserSexValueChanged, true);
-            app.UserSex.Position = [96 57 108 22];
-            app.UserSex.Value = '男';
-
-            % Create UserNameLabel
-            app.UserNameLabel = uilabel(app.UserPanel);
-            app.UserNameLabel.HorizontalAlignment = 'right';
-            app.UserNameLabel.FontName = 'SimHei';
-            app.UserNameLabel.FontWeight = 'bold';
-            app.UserNameLabel.Tooltip = {'输入被试的姓名，中英文都可以。'};
-            app.UserNameLabel.Position = [51 89 30 22];
-            app.UserNameLabel.Text = '姓名';
-
-            % Create UserName
-            app.UserName = uieditfield(app.UserPanel, 'text');
-            app.UserName.ValueChangedFcn = createCallbackFcn(app, @UserNameValueChanged, true);
-            app.UserName.Position = [96 89 108 22];
-
             % Create UserIdLabel
             app.UserIdLabel = uilabel(app.UserPanel);
             app.UserIdLabel.BackgroundColor = [0.9412 0.9412 0.9412];
@@ -223,6 +175,54 @@ classdef start_exp < matlab.apps.AppBase
             app.UserId.ValueChangedFcn = createCallbackFcn(app, @UserIdValueChanged, true);
             app.UserId.Position = [96 122 108 22];
             app.UserId.Value = 1;
+
+            % Create UserNameLabel
+            app.UserNameLabel = uilabel(app.UserPanel);
+            app.UserNameLabel.HorizontalAlignment = 'right';
+            app.UserNameLabel.FontName = 'SimHei';
+            app.UserNameLabel.FontWeight = 'bold';
+            app.UserNameLabel.Tooltip = {'输入被试的姓名，中英文都可以。'};
+            app.UserNameLabel.Position = [51 89 30 22];
+            app.UserNameLabel.Text = '姓名';
+
+            % Create UserName
+            app.UserName = uieditfield(app.UserPanel, 'text');
+            app.UserName.ValueChangedFcn = createCallbackFcn(app, @UserNameValueChanged, true);
+            app.UserName.Position = [96 89 108 22];
+
+            % Create UserSexLabel
+            app.UserSexLabel = uilabel(app.UserPanel);
+            app.UserSexLabel.HorizontalAlignment = 'right';
+            app.UserSexLabel.FontName = 'SimHei';
+            app.UserSexLabel.FontWeight = 'bold';
+            app.UserSexLabel.Tooltip = {'下拉选择被试的性别。'};
+            app.UserSexLabel.Position = [51 57 30 22];
+            app.UserSexLabel.Text = '性别';
+
+            % Create UserSex
+            app.UserSex = uidropdown(app.UserPanel);
+            app.UserSex.Items = {'男', '女'};
+            app.UserSex.ValueChangedFcn = createCallbackFcn(app, @UserSexValueChanged, true);
+            app.UserSex.Position = [96 57 108 22];
+            app.UserSex.Value = '男';
+
+            % Create UserRegister
+            app.UserRegister = uibutton(app.UserPanel, 'push');
+            app.UserRegister.ButtonPushedFcn = createCallbackFcn(app, @UserRegisterButtonPushed, true);
+            app.UserRegister.BackgroundColor = [1 1 1];
+            app.UserRegister.FontName = 'SimHei';
+            app.UserRegister.FontWeight = 'bold';
+            app.UserRegister.Position = [148 20 69 22];
+            app.UserRegister.Text = '录入';
+
+            % Create UserModify
+            app.UserModify = uibutton(app.UserPanel, 'push');
+            app.UserModify.ButtonPushedFcn = createCallbackFcn(app, @UserModifyButtonPushed, true);
+            app.UserModify.BackgroundColor = [1 1 1];
+            app.UserModify.FontName = 'SimHei';
+            app.UserModify.FontWeight = 'bold';
+            app.UserModify.Position = [41 20 69 22];
+            app.UserModify.Text = '修改';
 
             % Create TestingPanel
             app.TestingPanel = uipanel(app.MainUI);
