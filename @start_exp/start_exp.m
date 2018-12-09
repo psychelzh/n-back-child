@@ -2,19 +2,19 @@ classdef start_exp < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        ONEBACKUIFigure  matlab.ui.Figure
-        UserPanel        matlab.ui.container.Panel
-        UserRegister     matlab.ui.control.Button
-        UserModify       matlab.ui.control.Button
-        UserSexLabel     matlab.ui.control.Label
-        UserSex          matlab.ui.control.DropDown
-        UserNameLabel    matlab.ui.control.Label
-        UserName         matlab.ui.control.EditField
-        UserIdLabel      matlab.ui.control.Label
-        UserId           matlab.ui.control.NumericEditField
-        TestingPanel     matlab.ui.container.Panel
-        Practice         matlab.ui.control.Button
-        Testing          matlab.ui.control.Button
+        MainUI         matlab.ui.Figure
+        UserPanel      matlab.ui.container.Panel
+        UserRegister   matlab.ui.control.Button
+        UserModify     matlab.ui.control.Button
+        UserSexLabel   matlab.ui.control.Label
+        UserSex        matlab.ui.control.DropDown
+        UserNameLabel  matlab.ui.control.Label
+        UserName       matlab.ui.control.EditField
+        UserIdLabel    matlab.ui.control.Label
+        UserId         matlab.ui.control.NumericEditField
+        TestingPanel   matlab.ui.container.Panel
+        Practice       matlab.ui.control.Button
+        Testing        matlab.ui.control.Button
     end
 
     
@@ -22,23 +22,33 @@ classdef start_exp < matlab.apps.AppBase
         user_id = 1; % identifier of user
         user_name = ''; % name of user
         user_sex = categorical("男", ["男", "女"]); % sex of user
-        practiced = false;
-        tested = false;
+        user_practiced = false; % practice completed
+        user_tested = false; % test completed
     end
     
     methods (Access = private)
         % process practice part
         function practice(app)
-            app.mainOneback(app.user_id, 'prac')
+            [status, exception] = app.mainOneback(app.user_id, 'prac');
+            app.user_practiced = true;
+            if status ~= 0
+                app.Practice.BackgroundColor = 'red';
+                rethrow(exception)
+            end
         end
         % process testing part
         function testing(app)
-            app.mainOneback(app.user_id, 'test')
+            [status, exception] = app.mainOneback(app.user_id, 'test');
+            app.user_tested = true;
+            if status ~= 0
+                app.Testing.BackgroundColor = 'red';
+                rethrow(exception)
+            end
         end
     end
     
     methods (Access = private, Static)
-        mainOneback(user, part)
+        [status, exception] = mainOneback(user, part)
     end
     
 
@@ -96,7 +106,6 @@ classdef start_exp < matlab.apps.AppBase
             app.UserRegister.Enable = 'off';
             app.UserModify.Visible = 'off';
             app.practice();
-            app.practiced = true;
         end
 
         % Button pushed function: Testing
@@ -108,7 +117,22 @@ classdef start_exp < matlab.apps.AppBase
             app.UserModify.Visible = 'off';
             app.Practice.Enable = 'off';
             app.testing();
-            app.tested = true;
+        end
+
+        % Close request function: MainUI
+        function MainUICloseRequest(app, event)
+            deletion_confirmed = true;
+            if ~app.user_tested
+                confirm_resp = questdlg( ...
+                    '当前用户还未完成测验，是否确认退出？', ...
+                    '退出确认', '是', '否', '否');
+                if strcmp(confirm_resp, '否')
+                    deletion_confirmed = false;
+                end
+            end
+            if deletion_confirmed
+                delete(app)
+            end
         end
     end
 
@@ -118,14 +142,15 @@ classdef start_exp < matlab.apps.AppBase
         % Create UIFigure and components
         function createComponents(app)
 
-            % Create ONEBACKUIFigure
-            app.ONEBACKUIFigure = uifigure;
-            app.ONEBACKUIFigure.Color = [0.902 0.902 0.902];
-            app.ONEBACKUIFigure.Position = [100 100 342 313];
-            app.ONEBACKUIFigure.Name = 'ONE-BACK测验';
+            % Create MainUI
+            app.MainUI = uifigure;
+            app.MainUI.Color = [0.902 0.902 0.902];
+            app.MainUI.Position = [100 100 342 313];
+            app.MainUI.Name = 'ONE-BACK测验';
+            app.MainUI.CloseRequestFcn = createCallbackFcn(app, @MainUICloseRequest, true);
 
             % Create UserPanel
-            app.UserPanel = uipanel(app.ONEBACKUIFigure);
+            app.UserPanel = uipanel(app.MainUI);
             app.UserPanel.ForegroundColor = [0 0.451 0.7412];
             app.UserPanel.TitlePosition = 'centertop';
             app.UserPanel.Title = '被试信息';
@@ -200,7 +225,7 @@ classdef start_exp < matlab.apps.AppBase
             app.UserId.Value = 1;
 
             % Create TestingPanel
-            app.TestingPanel = uipanel(app.ONEBACKUIFigure);
+            app.TestingPanel = uipanel(app.MainUI);
             app.TestingPanel.ForegroundColor = [0 0.451 0.7412];
             app.TestingPanel.TitlePosition = 'centertop';
             app.TestingPanel.Title = '开始测验';
@@ -237,7 +262,7 @@ classdef start_exp < matlab.apps.AppBase
             createComponents(app)
 
             % Register the app with App Designer
-            registerApp(app, app.ONEBACKUIFigure)
+            registerApp(app, app.MainUI)
 
             % Execute the startup function
             runStartupFcn(app, @startupFcn)
@@ -251,7 +276,7 @@ classdef start_exp < matlab.apps.AppBase
         function delete(app)
 
             % Delete UIFigure when app is deleted
-            delete(app.ONEBACKUIFigure)
+            delete(app.MainUI)
         end
     end
 end
