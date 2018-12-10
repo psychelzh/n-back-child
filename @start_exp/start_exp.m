@@ -175,6 +175,14 @@ classdef start_exp < matlab.apps.AppBase
 
         % Button pushed function: Testing
         function TestingButtonPushed(app, event)
+            if app.user_tested
+                confirm_resp = questdlg( ...
+                    '当前用户已完成测验，是否需要重新测验？', ...
+                    '退出确认', '是', '否', '否');
+                if strcmp(confirm_resp, '否')
+                    return
+                end
+            end
             app.UserId.Enable = 'off';
             app.UserName.Enable = 'off';
             app.UserSex.Enable = 'off';
