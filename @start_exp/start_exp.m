@@ -41,7 +41,7 @@ classdef start_exp < matlab.apps.AppBase
     methods (Access = private)
         % process practice part
         function practice(app)
-            [status, exception] = app.mainOneback(app.user_id, 'prac');
+            [status, exception] = app.mainOneback('prac');
             app.user_practiced = true;
             if status ~= 0
                 app.Practice.BackgroundColor = 'red';
@@ -50,7 +50,7 @@ classdef start_exp < matlab.apps.AppBase
         end
         % process testing part
         function testing(app)
-            [status, exception] = app.mainOneback(app.user_id, 'test');
+            [status, exception] = app.mainOneback('test');
             app.user_tested = true;
             if status ~= 0
                 app.Testing.BackgroundColor = 'red';
@@ -59,8 +59,9 @@ classdef start_exp < matlab.apps.AppBase
         end
     end
     
-    methods (Access = private, Static)
-        [status, exception] = mainOneback(user, part)
+    methods (Access = private)
+        % main one back experiment
+        [status, exception] = mainOneback(app, part)
     end
     
 
