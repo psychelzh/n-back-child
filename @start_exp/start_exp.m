@@ -61,9 +61,6 @@ classdef start_exp < matlab.apps.AppBase
                 app.Testing.BackgroundColor = 'green';
             end
         end
-    end
-    
-    methods (Access = private)
         % main one back experiment
         [status, exception] = mainOneback(app, part)
     end
