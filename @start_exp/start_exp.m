@@ -46,6 +46,8 @@ classdef start_exp < matlab.apps.AppBase
             if status ~= 0
                 app.Practice.BackgroundColor = 'red';
                 rethrow(exception)
+            else
+                app.Practice.BackgroundColor = 'green';
             end
         end
         % process testing part
@@ -55,6 +57,8 @@ classdef start_exp < matlab.apps.AppBase
             if status ~= 0
                 app.Testing.BackgroundColor = 'red';
                 rethrow(exception)
+            else
+                app.Testing.BackgroundColor = 'green';
             end
         end
     end
@@ -118,7 +122,7 @@ classdef start_exp < matlab.apps.AppBase
             app.Testing.Enable = 'on';
             app.user_regtime = datetime;
             % using 'csvy' format, learn more at https://csvy.org/
-            % using file extension .csv 
+            % using file extension .csv
             app.log_file = sprintf('%s-%d-%s.csv', ...
                 app.exp_name, app.user_id, ...
                 datestr(app.user_regtime, 'yyyymmddHHMMSS'));
