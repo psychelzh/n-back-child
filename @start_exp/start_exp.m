@@ -194,18 +194,15 @@ classdef start_exp < matlab.apps.AppBase
 
         % Close request function: MainUI
         function MainUICloseRequest(app, event)
-            deletion_confirmed = true;
             if app.user_registed && ~app.user_tested
                 confirm_resp = questdlg( ...
                     '当前用户还未完成测验，是否确认退出？', ...
                     '退出确认', '是', '否', '否');
                 if strcmp(confirm_resp, '否')
-                    deletion_confirmed = false;
+                    return
                 end
             end
-            if deletion_confirmed
-                delete(app)
-            end
+            delete(app)
         end
     end
 
