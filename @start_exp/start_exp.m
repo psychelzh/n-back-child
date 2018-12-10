@@ -19,11 +19,23 @@ classdef start_exp < matlab.apps.AppBase
 
     
     properties (Access = private)
+        % user information
         user_id = 1; % identifier of user
         user_name = ''; % name of user
-        user_sex = categorical("男", ["男", "女"]); % sex of user
+        user_sex = '男'; % sex of user
+        % registration
+        user_regtime; % register time
+        user_registed = false; % indicator whether user is registered
+        % experiment related
+        exp_name = 'Oneback'; % experiment time
         user_practiced = false; % practice completed
         user_tested = false; % test completed
+        log_file = []; % name of file to log result data
+    end
+    
+    properties (Access = private, Constant)
+        create_time = datetime; % create time of app
+        log_dir = 'logs'; % directory to log data
     end
     
     methods (Access = private)
@@ -56,13 +68,23 @@ classdef start_exp < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            % initialize buttons
             app.Practice.Enable = 'off';
             app.Testing.Enable = 'off';
             app.UserModify.Visible = 'off';
+            % initialize logging directory
+            if ~exist(app.log_dir, 'dir')
+                mkdir(app.log_dir)
+            end
         end
 
         % Value changed function: UserId
         function UserIdValueChanged(app, event)
+            tmp_id = app.UserId.Value;
+            if round(tmp_id) ~= tmp_id
+                msgbox('用户编号必须为整数，将向下取整。')
+                app.UserId.Value = floor(tmp_id);
+            end
             app.user_id = app.UserId.Value;
         end
 
@@ -73,11 +95,19 @@ classdef start_exp < matlab.apps.AppBase
 
         % Value changed function: UserName
         function UserNameValueChanged(app, event)
-            app.user_name = app.UserName.Value;
+            app.user_name = strtrim(app.UserName.Value);
         end
 
         % Button pushed function: UserRegister
         function UserRegisterButtonPushed(app, event)
+            if isempty(app.user_name)
+                confirm_resp = questdlg( ...
+                    '用户姓名好像未填写，是否返回填写？', ...
+                    '录入确认', '是', '否', '是');
+                if strcmp(confirm_resp, '是')
+                    return
+                end
+            end
             app.UserId.Enable = 'off';
             app.UserName.Enable = 'off';
             app.UserSex.Enable = 'off';
@@ -85,6 +115,33 @@ classdef start_exp < matlab.apps.AppBase
             app.UserModify.Visible = 'on';
             app.Practice.Enable = 'on';
             app.Testing.Enable = 'on';
+            app.user_regtime = datetime;
+            % using 'csvy' format, learn more at https://csvy.org/
+            % using file extension .csv 
+            app.log_file = sprintf('%s-%d-%s.csv', ...
+                app.exp_name, app.user_id, ...
+                datestr(app.user_regtime, 'yyyymmddHHMMSS'));
+            h_log_file = fopen(fullfile(app.log_dir, app.log_file), ...
+                'w', 'n', 'UTF-8');
+            fprintf(h_log_file, ...
+                ['#---', ...
+                '\n#file_encoding: UTF-8', ...
+                '\n#exp_name: %s', ...
+                '\n#create_time: %s', ...
+                '\n#user: ', ...
+                '\n#  regtime: %s', ...
+                '\n#  id: %d', ...
+                '\n#  name: %s', ...
+                '\n#  sex: %s', ...
+                '\n#---'], ...
+                app.exp_name, ...
+                app.create_time, ...
+                app.user_regtime, ...
+                app.user_id, ...
+                app.user_name, ...
+                app.user_sex);
+            fclose(h_log_file);
+            app.user_registed = true;
         end
 
         % Button pushed function: UserModify
@@ -96,6 +153,9 @@ classdef start_exp < matlab.apps.AppBase
             app.UserModify.Visible = 'off';
             app.Practice.Enable = 'off';
             app.Testing.Enable = 'off';
+            delete(fullfile(app.log_dir, app.log_file));
+            app.log_file = [];
+            app.user_registed = false;
         end
 
         % Button pushed function: Practice
@@ -122,7 +182,7 @@ classdef start_exp < matlab.apps.AppBase
         % Close request function: MainUI
         function MainUICloseRequest(app, event)
             deletion_confirmed = true;
-            if ~app.user_tested
+            if app.user_registed && ~app.user_tested
                 confirm_resp = questdlg( ...
                     '当前用户还未完成测验，是否确认退出？', ...
                     '退出确认', '是', '否', '否');
@@ -171,7 +231,6 @@ classdef start_exp < matlab.apps.AppBase
             % Create UserId
             app.UserId = uieditfield(app.UserPanel, 'numeric');
             app.UserId.Limits = [1 Inf];
-            app.UserId.ValueDisplayFormat = '%.0f';
             app.UserId.ValueChangedFcn = createCallbackFcn(app, @UserIdValueChanged, true);
             app.UserId.Position = [96 122 108 22];
             app.UserId.Value = 1;
@@ -256,7 +315,7 @@ classdef start_exp < matlab.apps.AppBase
     methods (Access = public)
 
         % Construct app
-        function app = start_exp
+        function app = start_exp(varargin)
 
             % Create and configure components
             createComponents(app)
