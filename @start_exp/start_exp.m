@@ -325,7 +325,7 @@ classdef start_exp < matlab.apps.AppBase
     methods (Access = public)
 
         % Construct app
-        function app = start_exp(varargin)
+        function app = start_exp
 
             % Create and configure components
             createComponents(app)
