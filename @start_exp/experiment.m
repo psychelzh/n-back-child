@@ -1,4 +1,4 @@
-function [status, exception] = mainOneback(user, part)
+function [status, exception] = experiment(app, part)
 % Copyright (C) 2018, Liang Zhang - All Rights Reserved.
 % @author      Liang Zhang <psychelzh@outlook.com>
 % @description This script is used to display stimuli in fMRI research
