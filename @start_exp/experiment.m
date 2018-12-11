@@ -10,16 +10,18 @@ function [status, exception] = experiment(app, part)
 status = 0;
 exception = [];
 
-try
+try % error proof programming
     % ---- configure screen and window ----
     % setup default level of 2
     PsychDefaultSetup(2);
+    % screen selection
+    screen_to_display = max(Screen('Screens'));
     % set the start up screen to black
     old_visdb = Screen('Preference', 'VisualDebugLevel', 1);
     % do not skip synchronization test to make sure timing is accurate
     old_sync = Screen('Preference', 'SkipSyncTests', 0);
-    % screen selection
-    screen_to_display = max(Screen('Screens'));
+    % set priority to the top
+    old_pri = Priority(MaxPriority(screen_to_display));
     % open a window and set its background color as gray
     gray = WhiteIndex(screen_to_display) / 2;
     [window_ptr, window_rect] = PsychImaging('OpenWindow', screen_to_display, gray);
@@ -169,8 +171,6 @@ try
         'VariableNames', rec_vars);
     
     % ---- present stimuli ----
-    % set priority to the top
-    priority_old = Priority(MaxPriority(window_ptr));
     % instruction
     instruction = ['下面我们玩一个游戏', ...
         '\n屏幕上会一个一个地出现小动物', ...
@@ -293,9 +293,15 @@ sca;
 ListenChar(1);
 ShowCursor;
 % restore preferences
-Screen('Preference', 'VisualDebugLevel', old_visdb);
-Screen('Preference', 'SkipSyncTests', old_sync);
-Priority(priority_old);
+if exist('old_visdb', 'var')
+    Screen('Preference', 'VisualDebugLevel', old_visdb);
+end
+if exist('old_sync', 'var')
+    Screen('Preference', 'SkipSyncTests', old_sync);
+end
+if exist('old_pri', 'var')
+    Priority(old_pri);
+end
 end
 
 function [spl, idx] = sample(set, k, exclude)
