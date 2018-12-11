@@ -213,7 +213,7 @@ classdef start_exp < matlab.apps.AppBase
             app.MainUI = uifigure;
             app.MainUI.Color = [0.902 0.902 0.902];
             app.MainUI.Position = [100 100 342 313];
-            app.MainUI.Name = 'ONE-BACK测验';
+            app.MainUI.Name = '测验向导';
             app.MainUI.CloseRequestFcn = createCallbackFcn(app, @MainUICloseRequest, true);
 
             % Create UserPanel
