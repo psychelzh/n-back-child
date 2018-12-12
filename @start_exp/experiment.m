@@ -51,9 +51,10 @@ try % error proof programming
     n_frames_trial = length(pres_vector);
     
     % ---- keyboard settings ----
+    start_key = KbName('s');
     exit_key = KbName('Escape');
-    left_key = KbName('LeftArrow');
-    right_key = KbName('RightArrow');
+    left_key = KbName('1!');
+    right_key = KbName('4$');
     
     % ---- prepare stimuli ----
     N_IMAGES = 10;
@@ -178,8 +179,13 @@ try % error proof programming
         '\n如果一样就按左键，不一样就按右键'];
     DrawFormattedText(window_ptr, double(instruction), 'center', 'center', [0, 0, 1]);
     Screen('Flip', window_ptr);
-    KbStrokeWait; % TODO: change it to 'Enter' key only
-    start_time = GetSecs;
+    while true
+        [~, resp_time, resp_code] = KbCheck(-1);
+        if resp_code(start_key)
+            start_time = resp_time;
+            break
+        end
+    end
     % trial by trial stimuli presentation
     for i_trial = 1:N_TRIALS + 1 % there is one filler trial
         early_exit = false;
