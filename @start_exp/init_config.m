@@ -2,7 +2,7 @@ function init_config(app)
 %GENSEQ generates sequence for current study and stores in a `.csv` file
 
 % set random seed as the same to ensure the same sequence is generated
-rng(20181213)
+rng(0)
 % initialize configurtion
 config = struct;
 config.experiment_name = app.ExperimentName;
@@ -36,6 +36,8 @@ end
 config_file = fopen(app.ConfigFileName, 'w');
 fprintf(config_file, '%s', jsonencode(config));
 fclose(config_file);
+% restore seed for random number generation to default
+rng('default')
 end
 
 function [seq_stim, seq_type] = genblockseq(num_trials, task_name)
