@@ -73,13 +73,18 @@ switch task_name
         seq_stim = nan(1, num_trials);
         for itrial = 1:num_trials
             if seq_type(itrial) == "filler"
-                seq_stim(itrial) = sample(stim_set, 1);
+                if itrial == 1
+                    exclude = [];
+                else
+                    exclude = seq_stim(itrial - 1);
+                end
+                seq_stim(itrial) = sample(stim_set, 1, exclude);
             end
             if seq_type(itrial) == "target"
                 seq_stim(itrial) = seq_stim(itrial - 2);
             end
             if seq_type(itrial) == "distractor"
-                seq_stim(itrial) = sample(stim_set, 1, seq_stim(itrial - 2));
+                seq_stim(itrial) = sample(stim_set, 1, seq_stim(itrial - 2:itrial - 1));
             end
         end
     otherwise
@@ -91,7 +96,10 @@ end
 function [spl, idx] = sample(set, k, exclude)
 % SAMPLE randomly selects from SET without replacement
 
-if nargin >= 3
+if nargin < 3
+    exclude = [];
+end
+if ~isempty(exclude)
     set = setdiff(set, exclude);
 end
 length_set = length(set);
