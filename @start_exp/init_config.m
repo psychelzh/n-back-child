@@ -90,7 +90,7 @@ switch task_name
             end
         end
     otherwise
-        error('NBACKCHILD:initcofig:genblockseq:invalidTask', ...
+        error('NBACKCHILD:init_cofig:genblockseq:invalidTaskName', ...
             'Task name ''%s'' is not supported now.', task_name);
 end
 end
