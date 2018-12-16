@@ -14,7 +14,8 @@ classdef start_exp < matlab.apps.AppBase
         ModifyUser     matlab.ui.control.Button
         TestingPanel   matlab.ui.container.Panel
         Practice       matlab.ui.control.Button
-        Testing        matlab.ui.control.Button
+        TestingRun1    matlab.ui.control.Button
+        TestingRun2    matlab.ui.control.Button
     end
 
     
@@ -23,7 +24,8 @@ classdef start_exp < matlab.apps.AppBase
         UserRegisterTime % time of registering
         UserIsRegistered = false; % indicate user is registered
         UserPracticedTimes = 0; % how many times user is practiced
-        UserIsTested = false; % test completed
+        UserIsTestedRun1 = false; % test run 1 is completed
+        UserIsTestedRun2 = false; % test run 2 is completed
         LogFileName; % name of file to log result data
     end
     
@@ -39,8 +41,9 @@ classdef start_exp < matlab.apps.AppBase
         function initializeUserCreation(app)
             % deregister current user
             app.UserIsRegistered = false;
-            app.UserIsPracticed = false;
-            app.UserIsTested = false;
+            app.UserPracticedTimes = 0;
+            app.UserIsTestedRun1 = false;
+            app.UserIsTestedRun2 = false;
             app.ValueUserId.Text = '待录入';
             app.ValueUserName.Text = '待录入';
             app.ValueUserSex.Text = '待录入';
@@ -50,8 +53,10 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.Enable = 'off';
             app.Practice.BackgroundColor = 'white';
             app.Practice.Enable = 'off';
-            app.Testing.BackgroundColor = 'white';
-            app.Testing.Enable = 'off';
+            app.TestingRun1.BackgroundColor = 'white';
+            app.TestingRun1.Enable = 'off';
+            app.TestingRun2.BackgroundColor = 'white';
+            app.TestingRun2.Enable = 'off';
         end
         % process practice part
         function practice(app)
@@ -64,21 +69,10 @@ classdef start_exp < matlab.apps.AppBase
                 app.UserPracticedTimes = app.UserPracticedTimes + 1;
             end
         end
-        % process testing part
-        function testing(app)
-            [status, exception] = app.start_nback('test');
-            app.UserIsTested = true;
-            if status ~= 0
-                app.Testing.BackgroundColor = 'red';
-                rethrow(exception)
-            else
-                app.Testing.BackgroundColor = 'green';
-            end
-        end
         % initialize configurations
         sequence = init_config(app, part)
         % startup nback test
-        [status, exception] = start_nback(app, part)
+        [status, exception] = start_nback(app, part, run)
     end
     
     methods (Access = public)
@@ -135,7 +129,8 @@ classdef start_exp < matlab.apps.AppBase
             app.ModifyUser.Visible = 'on';
             % enable testing now
             app.Practice.Enable = 'on';
-            app.Testing.Enable = 'on';
+            app.TestingRun1.Enable = 'on';
+            app.TestingRun2.Enable = 'on';
         end
     end
 
@@ -147,7 +142,8 @@ classdef start_exp < matlab.apps.AppBase
             app.ModifyUser.Visible = 'off';
             app.NewUser.Enable = 'on';
             app.Practice.Enable = 'off';
-            app.Testing.Enable = 'off';
+            app.TestingRun1.Enable = 'off';
+            app.TestingRun2.Enable = 'off';
             % create log file path if not existed
             if ~exist(app.LogFilePath, 'dir')
                 mkdir(app.LogFilePath)
@@ -156,7 +152,7 @@ classdef start_exp < matlab.apps.AppBase
 
         % Button pushed function: NewUser
         function NewUserButtonPushed(app, event)
-            if app.UserIsRegistered && ~app.UserIsTested
+            if app.UserIsRegistered && ~(app.UserIsTestedRun1 && app.UserIsTestedRun2)
                 confirm_resp = uiconfirm(app.MainUI, ...
                     '当前用户还未完成测验，是否强制新建用户？', '新建用户确认',  ...
                     'Options', {'是', '否'}, 'DefaultOption', '否');
@@ -184,11 +180,11 @@ classdef start_exp < matlab.apps.AppBase
             app.practice();
         end
 
-        % Button pushed function: Testing
-        function TestingButtonPushed(app, event)
-            if app.UserIsTested
+        % Button pushed function: TestingRun1
+        function TestingRun1ButtonPushed(app, event)
+            if app.UserIsTestedRun1
                 confirm_resp = uiconfirm(app.MainUI, ...
-                    '当前用户已完成测验，是否需要重新测验？', '退出确认',  ...
+                    '当前用户已完成第一次测验，是否需要重新开始？', '重测确认',  ...
                     'Options', {'是', '否'}, 'DefaultOption', '否');
                 if strcmp(confirm_resp, '否')
                     return
@@ -196,12 +192,41 @@ classdef start_exp < matlab.apps.AppBase
             end
             app.ModifyUser.Visible = 'off';
             app.Practice.Enable = 'off';
-            app.testing();
+            [status, exception] = app.start_nback('test', 1);
+            app.UserIsTestedRun1 = true;
+            if status ~= 0
+                app.TestingRun1.BackgroundColor = 'red';
+                rethrow(exception)
+            else
+                app.TestingRun1.BackgroundColor = 'green';
+            end
+        end
+
+        % Button pushed function: TestingRun2
+        function TestingRun2ButtonPushed(app, event)
+            if app.UserIsTestedRun2
+                confirm_resp = uiconfirm(app.MainUI, ...
+                    '当前用户已完成第二次测验，是否需要重新开始？', '重测确认',  ...
+                    'Options', {'是', '否'}, 'DefaultOption', '否');
+                if strcmp(confirm_resp, '否')
+                    return
+                end
+            end
+            app.ModifyUser.Visible = 'off';
+            app.Practice.Enable = 'off';
+            [status, exception] = app.start_nback('test', 2);
+            app.UserIsTestedRun2 = true;
+            if status ~= 0
+                app.TestingRun2.BackgroundColor = 'red';
+                rethrow(exception)
+            else
+                app.TestingRun2.BackgroundColor = 'green';
+            end
         end
 
         % Close request function: MainUI
         function MainUICloseRequest(app, event)
-            if app.UserIsRegistered && ~app.UserIsTested
+            if app.UserIsRegistered && ~(app.UserIsTestedRun1 && app.UserIsTestedRun2)
                 confirm_resp = uiconfirm(app.MainUI, ...
                     '当前用户还未完成测验，是否确认退出？', '退出确认',  ...
                     'Options', {'是', '否'}, 'DefaultOption', '否');
@@ -314,7 +339,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingPanel.Title = '开始测验';
             app.TestingPanel.FontName = 'SimHei';
             app.TestingPanel.FontWeight = 'bold';
-            app.TestingPanel.Position = [171 68 260 81];
+            app.TestingPanel.Position = [171 48 260 123];
 
             % Create Practice
             app.Practice = uibutton(app.TestingPanel, 'push');
@@ -322,17 +347,26 @@ classdef start_exp < matlab.apps.AppBase
             app.Practice.BackgroundColor = [1 1 1];
             app.Practice.FontName = 'SimHei';
             app.Practice.FontWeight = 'bold';
-            app.Practice.Position = [42 21 69 22];
+            app.Practice.Position = [95 71 69 22];
             app.Practice.Text = '练习';
 
-            % Create Testing
-            app.Testing = uibutton(app.TestingPanel, 'push');
-            app.Testing.ButtonPushedFcn = createCallbackFcn(app, @TestingButtonPushed, true);
-            app.Testing.BackgroundColor = [0.8 0.8 0.8];
-            app.Testing.FontName = 'SimHei';
-            app.Testing.FontWeight = 'bold';
-            app.Testing.Position = [149 21 69 22];
-            app.Testing.Text = '正式';
+            % Create TestingRun1
+            app.TestingRun1 = uibutton(app.TestingPanel, 'push');
+            app.TestingRun1.ButtonPushedFcn = createCallbackFcn(app, @TestingRun1ButtonPushed, true);
+            app.TestingRun1.BackgroundColor = [0.8 0.8 0.8];
+            app.TestingRun1.FontName = 'SimHei';
+            app.TestingRun1.FontWeight = 'bold';
+            app.TestingRun1.Position = [35 25 83 22];
+            app.TestingRun1.Text = '正式-第一次';
+
+            % Create TestingRun2
+            app.TestingRun2 = uibutton(app.TestingPanel, 'push');
+            app.TestingRun2.ButtonPushedFcn = createCallbackFcn(app, @TestingRun2ButtonPushed, true);
+            app.TestingRun2.BackgroundColor = [0.8 0.8 0.8];
+            app.TestingRun2.FontName = 'SimHei';
+            app.TestingRun2.FontWeight = 'bold';
+            app.TestingRun2.Position = [142 25 83 22];
+            app.TestingRun2.Text = '正式-第二次';
         end
     end
 
