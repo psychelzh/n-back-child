@@ -14,7 +14,8 @@ classdef start_exp < matlab.apps.AppBase
         ModifyUser     matlab.ui.control.Button
         TestingPanel   matlab.ui.container.Panel
         Practice       matlab.ui.control.Button
-        Testing        matlab.ui.control.Button
+        TestingRun1    matlab.ui.control.Button
+        TestingRun2    matlab.ui.control.Button
     end
 
     
@@ -22,15 +23,18 @@ classdef start_exp < matlab.apps.AppBase
         RegisterUserApp % user register app
         UserRegisterTime % time of registering
         UserIsRegistered = false; % indicate user is registered
-        UserIsPracticed = false; % practice completed
-        UserIsTested = false; % test completed
-        LogFilePath = 'logs'; % path of file to log result data
-        LogFileName = []; % name of file to log result data
+        UserPracticedTimes = 0; % how many times user is practiced
+        UserIsTestedRun1 = false; % test run 1 is completed
+        UserIsTestedRun2 = false; % test run 2 is completed
+        LogFileName; % name of file to log result data
     end
     
     properties (Access = private, Constant)
-        CreateTime = datetime; % create time of app
-        ExperimentName = 'NBack'; % experiment time
+        ExperimentName = 'NBack'; % name of the experiment
+        ImageFilePath = 'image'; % path storing instruction images
+        LogFilePath = 'logs'; % path of file to log result data
+        NumberTrialsPerBlock = 10; % set number of trials for a block
+        StimuliSet = 0:9; % set the stimuli set
     end
     
     methods (Access = private)
@@ -38,8 +42,9 @@ classdef start_exp < matlab.apps.AppBase
         function initializeUserCreation(app)
             % deregister current user
             app.UserIsRegistered = false;
-            app.UserIsPracticed = false;
-            app.UserIsTested = false;
+            app.UserPracticedTimes = 0;
+            app.UserIsTestedRun1 = false;
+            app.UserIsTestedRun2 = false;
             app.ValueUserId.Text = '待录入';
             app.ValueUserName.Text = '待录入';
             app.ValueUserSex.Text = '待录入';
@@ -49,33 +54,26 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.Enable = 'off';
             app.Practice.BackgroundColor = 'white';
             app.Practice.Enable = 'off';
-            app.Testing.BackgroundColor = 'white';
-            app.Testing.Enable = 'off';
+            app.TestingRun1.BackgroundColor = 'white';
+            app.TestingRun1.Enable = 'off';
+            app.TestingRun2.BackgroundColor = 'white';
+            app.TestingRun2.Enable = 'off';
         end
         % process practice part
         function practice(app)
-            [status, exception] = app.experiment('prac');
-            app.UserIsPracticed = true;
+            [status, exception] = app.start_nback('prac');
             if status ~= 0
                 app.Practice.BackgroundColor = 'red';
                 rethrow(exception)
             else
-                app.Practice.BackgroundColor = 'green';
+                app.Practice.BackgroundColor = 'magenta';
+                app.UserPracticedTimes = app.UserPracticedTimes + 1;
             end
         end
-        % process testing part
-        function testing(app)
-            [status, exception] = app.experiment('test');
-            app.UserIsTested = true;
-            if status ~= 0
-                app.Testing.BackgroundColor = 'red';
-                rethrow(exception)
-            else
-                app.Testing.BackgroundColor = 'green';
-            end
-        end
-        % main experiment method
-        [status, exception] = experiment(app, part)
+        % initialize configurations
+        sequence = init_config(app, part)
+        % startup nback test
+        [status, exception] = start_nback(app, part, run)
     end
     
     methods (Access = public)
@@ -95,7 +93,7 @@ classdef start_exp < matlab.apps.AppBase
             end
             % check user identifier duplication
             existed_logs = dir(fullfile(app.LogFilePath, ...
-                sprintf('%s-*.csv', app.ExperimentName)));
+                sprintf('%s-*', app.ExperimentName)));
             existed_identifiers = str2double(...
                 regexp({existed_logs.name}, ...
                 sprintf('(?<=%s-)\\d+', app.ExperimentName), ...
@@ -117,40 +115,25 @@ classdef start_exp < matlab.apps.AppBase
             app.ValueUserId.Text = num2str(app.RegisterUserApp.Identifier);
             app.ValueUserName.Text = app.RegisterUserApp.Name;
             app.ValueUserSex.Text = app.RegisterUserApp.Sex;
-            % using 'csvy' format to serialize user info, learn more at https://csvy.org/
-            % using file extension .csv
-            app.LogFileName = sprintf('%s-%d-%s.csv', ...
+            % return to using matlab .mat file to store results
+            app.LogFileName = sprintf('%s-%d-%s', ...
                 app.ExperimentName, app.RegisterUserApp.Identifier, ...
                 datestr(app.UserRegisterTime, 'yyyymmdd_HHMMSS'));
-            h_log_file = fopen(fullfile(app.LogFilePath, app.LogFileName), ...
-                'w', 'n', 'UTF-8');
-            fprintf(h_log_file, ...
-                ['#---', ...
-                '\n#file_encoding: UTF-8', ...
-                '\n#experiment_name: %s', ...
-                '\n#create_time: %s', ...
-                '\n#register_time: %s', ...
-                '\n#user: ', ...
-                '\n#  id: %d', ...
-                '\n#  name: %s', ...
-                '\n#  sex: %s', ...
-                '\n#---'], ...
-                app.ExperimentName, ...
-                app.CreateTime, ...
-                app.UserRegisterTime, ...
-                app.RegisterUserApp.Identifier, ...
-                app.RegisterUserApp.Name, ...
-                app.RegisterUserApp.Sex);
-            fclose(h_log_file);
+            % create user structure to store
+            user.id = app.RegisterUserApp.Identifier;
+            user.name = app.RegisterUserApp.Name;
+            user.sex = app.RegisterUserApp.Sex;
+            user.create_time = app.UserRegisterTime;
+            save(fullfile(app.LogFilePath, app.LogFileName), 'user')
             % enable creating new user and modifying current user
             app.NewUser.Enable = 'on';
             app.ModifyUser.Visible = 'on';
             % enable testing now
             app.Practice.Enable = 'on';
-            app.Testing.Enable = 'on';
+            app.TestingRun1.Enable = 'on';
+            app.TestingRun2.Enable = 'on';
         end
     end
-    
 
     methods (Access = private)
 
@@ -160,8 +143,9 @@ classdef start_exp < matlab.apps.AppBase
             app.ModifyUser.Visible = 'off';
             app.NewUser.Enable = 'on';
             app.Practice.Enable = 'off';
-            app.Testing.Enable = 'off';
-            % initialize logging directory
+            app.TestingRun1.Enable = 'off';
+            app.TestingRun2.Enable = 'off';
+            % create log file path if not existed
             if ~exist(app.LogFilePath, 'dir')
                 mkdir(app.LogFilePath)
             end
@@ -169,10 +153,10 @@ classdef start_exp < matlab.apps.AppBase
 
         % Button pushed function: NewUser
         function NewUserButtonPushed(app, event)
-            if app.UserIsRegistered && ~app.UserIsTested
-                confirm_resp = questdlg( ...
-                    '当前用户还未完成测验，是否强制新建用户？', ...
-                    '新建用户确认', '是', '否', '否');
+            if app.UserIsRegistered && ~(app.UserIsTestedRun1 && app.UserIsTestedRun2)
+                confirm_resp = uiconfirm(app.MainUI, ...
+                    '当前用户还未完成测验，是否强制新建用户？', '新建用户确认',  ...
+                    'Options', {'是', '否'}, 'DefaultOption', '否');
                 if strcmp(confirm_resp, '否')
                     return
                 end
@@ -197,27 +181,56 @@ classdef start_exp < matlab.apps.AppBase
             app.practice();
         end
 
-        % Button pushed function: Testing
-        function TestingButtonPushed(app, event)
-            if app.UserIsTested
-                confirm_resp = questdlg( ...
-                    '当前用户已完成测验，是否需要重新测验？', ...
-                    '退出确认', '是', '否', '否');
+        % Button pushed function: TestingRun1
+        function TestingRun1ButtonPushed(app, event)
+            if app.UserIsTestedRun1
+                confirm_resp = uiconfirm(app.MainUI, ...
+                    '当前用户已完成第一次测验，是否需要重新开始？', '重测确认',  ...
+                    'Options', {'是', '否'}, 'DefaultOption', '否');
                 if strcmp(confirm_resp, '否')
                     return
                 end
             end
             app.ModifyUser.Visible = 'off';
             app.Practice.Enable = 'off';
-            app.testing();
+            [status, exception] = app.start_nback('test', 1);
+            app.UserIsTestedRun1 = true;
+            if status ~= 0
+                app.TestingRun1.BackgroundColor = 'red';
+                rethrow(exception)
+            else
+                app.TestingRun1.BackgroundColor = 'green';
+            end
+        end
+
+        % Button pushed function: TestingRun2
+        function TestingRun2ButtonPushed(app, event)
+            if app.UserIsTestedRun2
+                confirm_resp = uiconfirm(app.MainUI, ...
+                    '当前用户已完成第二次测验，是否需要重新开始？', '重测确认',  ...
+                    'Options', {'是', '否'}, 'DefaultOption', '否');
+                if strcmp(confirm_resp, '否')
+                    return
+                end
+            end
+            app.ModifyUser.Visible = 'off';
+            app.Practice.Enable = 'off';
+            [status, exception] = app.start_nback('test', 2);
+            app.UserIsTestedRun2 = true;
+            if status ~= 0
+                app.TestingRun2.BackgroundColor = 'red';
+                rethrow(exception)
+            else
+                app.TestingRun2.BackgroundColor = 'green';
+            end
         end
 
         % Close request function: MainUI
         function MainUICloseRequest(app, event)
-            if app.UserIsRegistered && ~app.UserIsTested
-                confirm_resp = questdlg( ...
-                    '当前用户还未完成测验，是否确认退出？', ...
-                    '退出确认', '是', '否', '否');
+            if app.UserIsRegistered && ~(app.UserIsTestedRun1 && app.UserIsTestedRun2)
+                confirm_resp = uiconfirm(app.MainUI, ...
+                    '当前用户还未完成测验，是否确认退出？', '退出确认',  ...
+                    'Options', {'是', '否'}, 'DefaultOption', '否');
                 if strcmp(confirm_resp, '否')
                     return
                 end
@@ -250,7 +263,7 @@ classdef start_exp < matlab.apps.AppBase
             app.UserPanel.Title = '当前被试';
             app.UserPanel.FontName = 'SimHei';
             app.UserPanel.FontWeight = 'bold';
-            app.UserPanel.Position = [171 161 260 179];
+            app.UserPanel.Position = [171 185 260 179];
 
             % Create LabelUserId
             app.LabelUserId = uilabel(app.UserPanel);
@@ -266,7 +279,7 @@ classdef start_exp < matlab.apps.AppBase
             app.ValueUserId = uilabel(app.UserPanel);
             app.ValueUserId.HorizontalAlignment = 'center';
             app.ValueUserId.FontName = 'SimSun';
-            app.ValueUserId.Position = [161 120 41 22];
+            app.ValueUserId.Position = [139 120 89 22];
             app.ValueUserId.Text = '待录入';
 
             % Create LabelUserName
@@ -282,7 +295,7 @@ classdef start_exp < matlab.apps.AppBase
             app.ValueUserName = uilabel(app.UserPanel);
             app.ValueUserName.HorizontalAlignment = 'center';
             app.ValueUserName.FontName = 'SimSun';
-            app.ValueUserName.Position = [161 87 41 22];
+            app.ValueUserName.Position = [139 87 89 22];
             app.ValueUserName.Text = '待录入';
 
             % Create LabelUserSex
@@ -298,7 +311,7 @@ classdef start_exp < matlab.apps.AppBase
             app.ValueUserSex = uilabel(app.UserPanel);
             app.ValueUserSex.HorizontalAlignment = 'center';
             app.ValueUserSex.FontName = 'SimSun';
-            app.ValueUserSex.Position = [161 55 41 22];
+            app.ValueUserSex.Position = [139 55 89 22];
             app.ValueUserSex.Text = '待录入';
 
             % Create NewUser
@@ -327,7 +340,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingPanel.Title = '开始测验';
             app.TestingPanel.FontName = 'SimHei';
             app.TestingPanel.FontWeight = 'bold';
-            app.TestingPanel.Position = [171 64 260 81];
+            app.TestingPanel.Position = [171 48 260 123];
 
             % Create Practice
             app.Practice = uibutton(app.TestingPanel, 'push');
@@ -335,17 +348,26 @@ classdef start_exp < matlab.apps.AppBase
             app.Practice.BackgroundColor = [1 1 1];
             app.Practice.FontName = 'SimHei';
             app.Practice.FontWeight = 'bold';
-            app.Practice.Position = [42 21 69 22];
+            app.Practice.Position = [95 71 69 22];
             app.Practice.Text = '练习';
 
-            % Create Testing
-            app.Testing = uibutton(app.TestingPanel, 'push');
-            app.Testing.ButtonPushedFcn = createCallbackFcn(app, @TestingButtonPushed, true);
-            app.Testing.BackgroundColor = [0.8 0.8 0.8];
-            app.Testing.FontName = 'SimHei';
-            app.Testing.FontWeight = 'bold';
-            app.Testing.Position = [149 21 69 22];
-            app.Testing.Text = '正式';
+            % Create TestingRun1
+            app.TestingRun1 = uibutton(app.TestingPanel, 'push');
+            app.TestingRun1.ButtonPushedFcn = createCallbackFcn(app, @TestingRun1ButtonPushed, true);
+            app.TestingRun1.BackgroundColor = [0.8 0.8 0.8];
+            app.TestingRun1.FontName = 'SimHei';
+            app.TestingRun1.FontWeight = 'bold';
+            app.TestingRun1.Position = [35 25 83 22];
+            app.TestingRun1.Text = '正式-第一次';
+
+            % Create TestingRun2
+            app.TestingRun2 = uibutton(app.TestingPanel, 'push');
+            app.TestingRun2.ButtonPushedFcn = createCallbackFcn(app, @TestingRun2ButtonPushed, true);
+            app.TestingRun2.BackgroundColor = [0.8 0.8 0.8];
+            app.TestingRun2.FontName = 'SimHei';
+            app.TestingRun2.FontWeight = 'bold';
+            app.TestingRun2.Position = [142 25 83 22];
+            app.TestingRun2.Text = '正式-第二次';
         end
     end
 
