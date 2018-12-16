@@ -58,7 +58,7 @@ try % error proof programming
     % set default font name and size
     Screen('TextFont', window_ptr, 'SimHei');
     Screen('TextSize', window_ptr, 128);
-    
+
     % ---- timing information ----
     % get inter flip interval
     ifi = Screen('GetFlipInterval', window_ptr);
@@ -79,13 +79,13 @@ try % error proof programming
         repelem("stimulus", image_frames), ...
         repelem("isi", isi_frames)];
     n_frames_trial = length(pres_vector);
-    
+
     % ---- keyboard settings ----
     start_key = KbName('s');
     exit_key = KbName('Escape');
     left_key = KbName('1!');
     right_key = KbName('4$');
-    
+
     % ---- present stimuli ----
     % instruction
     instruction = ['下面我们玩一个游戏', ...
@@ -157,7 +157,7 @@ try % error proof programming
                             window_center_x, window_center_y, BlackIndex(window_ptr));
                     case "stimulus"
                         Screen('DrawText', window_ptr, num2str(trial.stim), ...
-                                window_center_x, window_center_y, BlackIndex(window_ptr));
+                            window_center_x, window_center_y, BlackIndex(window_ptr));
                     case "isi"
                         Screen('FillRect', window_ptr, gray);
                 end
