@@ -48,8 +48,7 @@ gray = WhiteIndex(screen_to_display) / 2;
 
 try % error proof programming
     % ---- open window ----
-    [window_ptr, window_rect] = PsychImaging('OpenWindow', screen_to_display, gray);
-    [window_center_x, window_center_y] = RectCenter(window_rect);
+    window_ptr = PsychImaging('OpenWindow', screen_to_display, gray);
     % disable character input and hide mouse cursor
     ListenChar(2);
     HideCursor;
@@ -126,8 +125,8 @@ try % error proof programming
         end
         % task cue presentation
         for taskcue_frame = 1:taskcue_frames
-            Screen('DrawText', window_ptr, double(block.disp_name), ...
-                window_center_x, window_center_y, [0, 1, 0]);
+            DrawFormattedText(window_ptr, double(block.disp_name), ...
+                'center', 'center', [1, 0, 0]);
             Screen('Flip', window_ptr);
             [~, ~, resp_code] = KbCheck(-1);
             if resp_code(exit_key)
@@ -153,11 +152,11 @@ try % error proof programming
                 draw_what = pres_vector(frame_to_draw);
                 switch draw_what
                     case "fixation"
-                        Screen('DrawText', window_ptr, '+', ...
-                            window_center_x, window_center_y, BlackIndex(window_ptr));
+                        DrawFormattedText(window_ptr, '+', ...
+                            'center', 'center', BlackIndex(window_ptr));
                     case "stimulus"
-                        Screen('DrawText', window_ptr, num2str(trial.stim), ...
-                            window_center_x, window_center_y, BlackIndex(window_ptr));
+                        DrawFormattedText(window_ptr, num2str(trial.stim), ...
+                                'center', 'center', BlackIndex(window_ptr));
                     case "isi"
                         Screen('FillRect', window_ptr, gray);
                 end
