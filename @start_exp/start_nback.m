@@ -26,8 +26,8 @@ run_active = config.runs(run);
 num_trials_total = sum(cellfun(@length, {run_active.blocks.trials}));
 
 % ----prepare data recording table ----
-rec_vars = {'block', 'trial', 'stim', 'trial_start_time', 'stim_onset_time', 'stim_offset_time', 'type', 'cresp', 'resp', 'acc', 'rt'};
-rec_dflt = {nan, nan, nan, nan, nan, nan, strings, strings, strings, -1, 0};
+rec_vars = {'block', 'task', 'trial', 'stim', 'trial_start_time', 'stim_onset_time', 'stim_offset_time', 'type', 'cresp', 'resp', 'acc', 'rt'};
+rec_dflt = {nan, strings, nan, nan, nan, nan, nan, strings, strings, strings, -1, 0};
 recordings = cell2table( ...
     repmat(rec_dflt, num_trials_total, 1), ...
     'VariableNames', rec_vars);
@@ -220,6 +220,7 @@ try % error proof programming
             % recording current response data
             trial_order = (block.id - 1) * app.NumberTrialsPerBlock + trial.id;
             recordings.block(trial_order) = block.id;
+            recordings.task(trial_order) = block.name;
             recordings.trial(trial_order) = trial.id;
             recordings.stim(trial_order) = trial.stim;
             recordings.trial_start_time(trial_order) = trial_start_time;
