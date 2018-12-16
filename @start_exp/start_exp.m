@@ -31,6 +31,7 @@ classdef start_exp < matlab.apps.AppBase
     
     properties (Access = private, Constant)
         ExperimentName = 'NBack'; % name of the experiment
+        ImageFilePath = 'image'; % path storing instruction images
         LogFilePath = 'logs'; % path of file to log result data
         NumberTrialsPerBlock = 10; % set number of trials for a block
         StimuliSet = 0:9; % set the stimuli set
