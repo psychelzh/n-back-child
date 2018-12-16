@@ -233,6 +233,7 @@ try % error proof programming
             recordings.stim(trial_order) = trial.stim;
             recordings.trial_start_time(trial_order) = trial_start_time;
             recordings.stim_onset_time(trial_order) = stim_onset_time;
+            recordings.stim_offset_time(trial_order) = stim_offset_time;
             recordings.type(trial_order) = trial.type;
             recordings.cresp(trial_order) = trial.cresp;
             recordings.resp(trial_order) = resp;
