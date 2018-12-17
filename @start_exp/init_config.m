@@ -62,7 +62,7 @@ switch task_name
     case "zero-back"
         % "target" is numbers smaller than 5, and "distractor" otherwise
         stim(type == "target") = randsample(stim_set(stim_set < 5), sum(stim_set < 5));
-        stim(type == "distractor") = randsample(stim_set(stim_set >= 5), sum(stim_set < 5));
+        stim(type == "distractor") = randsample(stim_set(stim_set >= 5), sum(stim_set >= 5));
     case "one-back"
         % the first should be "filler"
         type(1) = "filler";
