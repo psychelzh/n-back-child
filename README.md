@@ -28,9 +28,9 @@ Pull request or issue opening are welcome.
 
 ## Authors
 
-* Liang Zhang (@psychelzh) - main coding part
-* Yu Zhou (@Zhouyu0206) - instruction pictures
-* Peixuan Li (@Flowshadow) - pictures in older versions
+* Liang Zhang ([psychelzh](https://github.com/psychelzh)) - main coding part
+* Yu Zhou ([Zhouyu0206](https://github.com/Zhouyu0206)) - instruction pictures
+* Peixuan Li ([Flowshadow](https://github.com/Flowshadow)) - pictures in older versions
 
 See also the list of [contributors](https://github.com/psychelzh/n-back-child/graphs/contributors) who participated in the project.
 
