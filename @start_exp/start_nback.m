@@ -105,6 +105,7 @@ try % error proof programming
                 break
             elseif resp_code(keys.start)
                 start_time = resp_time;
+                trial_next_start_time_expt = 0;
             end
         end
         % a trial contains a fixation, a stimulus and a blank screen (wait
@@ -141,6 +142,10 @@ try % error proof programming
                 trial_next_start_time_expt = ...
                     trial_next_start_time_expt + ...
                     (app.TimeFixationSecs + app.TimeStimuliSecs + app.TimeBlankSecs);
+                % there is a screen of 1 secs for feedback in practice part
+                if strcmp(part, 'prac')
+                    trial_next_start_time_expt = trial_next_start_time_expt + 1;
+                end
                 % draw fixation and wait for press of `Esc` to exit
                 DrawFormattedText(window_ptr, '+', ...
                     'center', 'center', [0, 0, 0]);
