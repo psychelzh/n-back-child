@@ -35,6 +35,8 @@ classdef start_exp < matlab.apps.AppBase
         StimuliSet = 0:9;
         NumberTrialsPerBlock = 10;
         % timing information
+        TimeWaitStartSecs = 5;
+        TimeWaitEndSecs = 5;
         TimeTaskCueSecs = 4;
         TimeFixationSecs = 0.5;
         TimeStimuliSecs = 1;
