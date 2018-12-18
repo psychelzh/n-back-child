@@ -30,11 +30,18 @@ classdef start_exp < matlab.apps.AppBase
     end
     
     properties (Access = private, Constant)
-        ExperimentName = 'NBack'; % name of the experiment
+        % experiment-related properties
+        ExperimentName = 'NBack';
+        StimuliSet = 0:9;
+        NumberTrialsPerBlock = 10;
+        % timing information
+        TimeTaskCueSecs = 4;
+        TimeFixationSecs = 0.5;
+        TimeStimuliSecs = 1;
+        TimeBlankSecs = 1; % this blank screen is waiting for user's response
+        % external files
         ImageFilePath = 'image'; % path storing instruction images
         LogFilePath = 'logs'; % path of file to log result data
-        NumberTrialsPerBlock = 10; % set number of trials for a block
-        StimuliSet = 0:9; % set the stimuli set
     end
     
     methods (Access = private)
