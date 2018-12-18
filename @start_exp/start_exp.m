@@ -79,6 +79,17 @@ classdef start_exp < matlab.apps.AppBase
                 app.UserPracticedTimes = app.UserPracticedTimes + 1;
             end
         end
+        % process testing part
+        function testing(app, run)
+            [status, exception] = app.start_nback('test', run);
+            if status ~= 0
+                app.(sprintf('TestingRun%d', run)).BackgroundColor = 'red';
+                rethrow(exception)
+            else
+                app.(sprintf('UserIsTestedRun%d', run)) = true;
+                app.(sprintf('TestingRun%d', run)).BackgroundColor = 'green';
+            end
+        end
         % initialize configurations
         sequence = init_config(app, part)
         % startup nback test
@@ -202,14 +213,7 @@ classdef start_exp < matlab.apps.AppBase
             end
             app.ModifyUser.Visible = 'off';
             app.Practice.Enable = 'off';
-            [status, exception] = app.start_nback('test', 1);
-            app.UserIsTestedRun1 = true;
-            if status ~= 0
-                app.TestingRun1.BackgroundColor = 'red';
-                rethrow(exception)
-            else
-                app.TestingRun1.BackgroundColor = 'green';
-            end
+            app.testing(1)
         end
 
         % Button pushed function: TestingRun2
@@ -224,14 +228,7 @@ classdef start_exp < matlab.apps.AppBase
             end
             app.ModifyUser.Visible = 'off';
             app.Practice.Enable = 'off';
-            [status, exception] = app.start_nback('test', 2);
-            app.UserIsTestedRun2 = true;
-            if status ~= 0
-                app.TestingRun2.BackgroundColor = 'red';
-                rethrow(exception)
-            else
-                app.TestingRun2.BackgroundColor = 'green';
-            end
+            app.testing(2)
         end
 
         % Close request function: MainUI
