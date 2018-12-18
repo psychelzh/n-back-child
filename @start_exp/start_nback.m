@@ -62,7 +62,12 @@ try % error proof programming
     % ---- timing information ----
     % get inter flip interval
     ifi = Screen('GetFlipInterval', window_ptr);
-
+    % stimulus time boundaries for each trial:
+    %  the first: stimulus onset
+    %  the second: stimulus offset
+    %  the third: trial end (or time length of one trial)
+    stim_bound = cumsum([app.TimeFixationSecs, app.TimeStimuliSecs, app.TimeBlankSecs]);
+    
     % ---- keyboard settings ----
     keys.start = KbName('s');
     keys.exit = KbName('Escape');
@@ -140,12 +145,13 @@ try % error proof programming
                 end
             else
                 trial_next_start_time_expt = ...
-                    trial_next_start_time_expt + ...
-                    (app.TimeFixationSecs + app.TimeStimuliSecs + app.TimeBlankSecs);
+                    trial_next_start_time_expt + stim_bound(3);
                 % there is a screen of 1 secs for feedback in practice part
                 if strcmp(part, 'prac')
                     trial_next_start_time_expt = trial_next_start_time_expt + 1;
                 end
+                % set the timing boundray of three phases of a trial
+                trial_bound = trial_start_time_expt + stim_bound;
                 % draw fixation and wait for press of `Esc` to exit
                 DrawFormattedText(window_ptr, '+', ...
                     'center', 'center', [0, 0, 0]);
@@ -153,7 +159,7 @@ try % error proof programming
                     Screen('Flip', window_ptr, ...
                     start_time + trial_start_time_expt - 0.5 * ifi);
                 [~, resp_code] = ...
-                    KbPressWait(-1, start_time + trial_start_time_expt + app.TimeFixationSecs - 0.5 * ifi);
+                    KbPressWait(-1, start_time + trial_bound(1) - 0.5 * ifi);
                 if resp_code(keys.exit)
                     early_exit = true;
                     break
@@ -168,9 +174,9 @@ try % error proof programming
                         'center', 'center', [0, 0, 0]);
                 end
                 stim_onset_timestamp = Screen('Flip', window_ptr, ...
-                    start_time + trial_start_time_expt + app.TimeFixationSecs - 0.5 * ifi);
+                    start_time + trial_bound(1) - 0.5 * ifi);
                 [resp_timestamp, resp_code] = ...
-                    KbPressWait(-1, start_time + trial_start_time_expt + app.TimeFixationSecs + app.TimeStimuliSecs - 0.5 * ifi);
+                    KbPressWait(-1, start_time + trial_bound(2) - 0.5 * ifi);
                 if resp_code(keys.exit)
                     early_exit = true;
                     break
@@ -181,10 +187,10 @@ try % error proof programming
                 % blank screen to wait for user's reponse
                 Screen('FillRect', window_ptr, gray);
                 stim_offset_timestamp = Screen('Flip', window_ptr, ...
-                    start_time + trial_start_time_expt + app.TimeFixationSecs + app.TimeStimuliSecs - 0.5 * ifi);
+                    start_time + trial_bound(2) - 0.5 * ifi);
                 if ~resp_made
                     [resp_timestamp, resp_code] = ...
-                        KbPressWait(-1, start_time + trial_next_start_time_expt - 0.5 * ifi);
+                        KbPressWait(-1, start_time + trial_bound(3) - 0.5 * ifi);
                     if resp_code(keys.exit)
                         early_exit = true;
                         break
