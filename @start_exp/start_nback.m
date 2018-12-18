@@ -58,17 +58,17 @@ try % error proof programming
     % set default font name and size
     Screen('TextFont', window_ptr, 'SimHei');
     Screen('TextSize', window_ptr, 128);
-    
+
     % ---- timing information ----
     % get inter flip interval
     ifi = Screen('GetFlipInterval', window_ptr);
-    
+
     % ---- keyboard settings ----
     keys.start = KbName('s');
     keys.exit = KbName('Escape');
     keys.left = KbName('1!');
     keys.right = KbName('4$');
-    
+
     % ---- present stimuli ----
     % display welcome screen and wait for a press of 's' to start
     [welcome_img, ~, welcome_alpha] = ...
@@ -77,15 +77,14 @@ try % error proof programming
     welcome_tex = Screen('MakeTexture', window_ptr, welcome_img);
     Screen('DrawTexture', window_ptr, welcome_tex);
     Screen('Flip', window_ptr);
-    while true
-        [~, resp_time, resp_code] = KbCheck(-1);
-        if resp_code(keys.start)
-            start_time = resp_time;
-            break
-        end
+    % here we should detect for a key press and release
+    [resp_time, resp_code] = KbStrokeWait(-1);
+    if resp_code(keys.start)
+        start_time = resp_time;
     end
     % FIXME: let this work only for practice and add fixation cross
     trial_next_start_time_expt = app.TimeWaitStartSecs;
+    % the flag to determine if the experiment should exit now
     early_exit = false;
     % a block contains a task cue and several trials
     for block = run_active.blocks
