@@ -82,8 +82,12 @@ try % error proof programming
     if resp_code(keys.start)
         start_time = resp_time;
     end
-    % FIXME: let this work only for practice and add fixation cross
-    trial_next_start_time_expt = app.TimeWaitStartSecs;
+    % present a fixation cross to wait user perpared in test part
+    if strcmp(part, 'test')
+        DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
+        Screen('Flip', window_ptr);
+        trial_next_start_time_expt = app.TimeWaitStartSecs;
+    end
     % the flag to determine if the experiment should exit now
     early_exit = false;
     % a block contains a task cue and several trials
