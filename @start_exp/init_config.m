@@ -104,7 +104,11 @@ end
 cresp = strings(1, length(type));
 cresp(type == "target") = "Left";
 cresp(type == "distractor") = "Right";
-% compose output structure
-seq = struct('id', num2cell(1:num_trials), 'type', num2cell(type), ...
-    'cresp', num2cell(cresp), 'stim', num2cell(stim));
+% set cue properties
+cue.id = 0;
+cue.type = "cue";
+cue.cresp = "";
+cue.stim = nan;
+seq = [cue, struct('id', num2cell(1:num_trials), 'type', num2cell(type), ...
+    'cresp', num2cell(cresp), 'stim', num2cell(stim))];
 end
