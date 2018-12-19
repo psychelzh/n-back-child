@@ -35,7 +35,6 @@ recordings = cell2table( ...
 % ---- configure screen and window ----
 % setup default level of 2
 PsychDefaultSetup(2);
-PsychDebugWindowConfiguration;
 % screen selection
 screen_to_display = max(Screen('Screens'));
 % set the start up screen to black
