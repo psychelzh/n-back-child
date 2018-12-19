@@ -245,6 +245,12 @@ try % error proof programming
             break
         end
     end
+    % present a fixation cross before ending in test part
+    if strcmp(part, 'test')
+        DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
+        Screen('Flip', window_ptr);
+        WaitSecs(app.TimeWaitEndSecs);
+    end
     % goodbye
     [ending_img, ~, ending_alpha] = ...
         imread(fullfile(app.ImageFilePath, 'ending.png'));
