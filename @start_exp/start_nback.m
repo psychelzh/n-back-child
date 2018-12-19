@@ -237,7 +237,7 @@ try % error proof programming
                 recordings.rt(trial_order) = resp_time;
             end
             % recording current response data
-            recordings.trial_strat_time_expt(trial_order) = trial_start_time_expt;
+            recordings.trial_start_time_expt(trial_order) = trial_start_time_expt;
             recordings.trial_start_time(trial_order) = trial_start_timestamp - start_time;
         end
         % otherwise the program will continue to next block
