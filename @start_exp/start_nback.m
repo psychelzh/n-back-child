@@ -26,8 +26,8 @@ run_active = config.runs(run);
 num_trials_total = sum(cellfun(@length, {run_active.blocks.trials}));
 
 % ----prepare data recording table ----
-rec_vars = {'block', 'task', 'trial', 'stim', 'trial_start_time_expt', 'trial_start_time', 'stim_onset_time', 'stim_offset_time', 'type', 'cresp', 'resp', 'acc', 'rt'};
-rec_dflt = {nan, strings, nan, nan, nan, nan, nan, nan, strings, strings, strings, -1, 0};
+rec_vars = {'trial_id', 'block', 'task', 'trial', 'stim', 'trial_start_time_expt', 'trial_start_time', 'stim_onset_time', 'stim_offset_time', 'type', 'cresp', 'resp', 'acc', 'rt'};
+rec_dflt = {nan, nan, strings, nan, nan, nan, nan, nan, nan, strings, strings, strings, -1, 0};
 recordings = cell2table( ...
     repmat(rec_dflt, num_trials_total, 1), ...
     'VariableNames', rec_vars);
@@ -95,6 +95,7 @@ try % error proof programming
     end
     % the flag to determine if the experiment should exit now
     early_exit = false;
+    trial_order = 0;
     % a block contains a task cue and several trials
     for block = run_active.blocks
         % display instruction when in practice part
@@ -117,7 +118,8 @@ try % error proof programming
         % for response)
         for trial = block.trials
             % store trial information
-            trial_order = (block.id - 1) * (app.NumberTrialsPerBlock + 1) + trial.id + 1;
+            trial_order = trial_order + 1;
+            recordings.trial_id(trial_order) = trial_order;
             recordings.block(trial_order) = block.id;
             recordings.task(trial_order) = block.name;
             recordings.trial(trial_order) = trial.id;
