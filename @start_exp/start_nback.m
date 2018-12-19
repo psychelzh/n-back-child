@@ -82,9 +82,13 @@ try % error proof programming
     Screen('DrawTexture', window_ptr, welcome_tex);
     Screen('Flip', window_ptr);
     % here we should detect for a key press and release
-    [resp_time, resp_code] = KbStrokeWait(-1);
-    if resp_code(keys.start)
-        start_time = resp_time;
+    key_start_pressed = false;
+    while ~key_start_pressed
+        [resp_time, resp_code] = KbStrokeWait(-1);
+        if resp_code(keys.start)
+            key_start_pressed = true;
+            start_time = resp_time;
+        end
     end
     % present a fixation cross to wait user perpared in test part
     if strcmp(part, 'test')
@@ -105,12 +109,17 @@ try % error proof programming
             instruction_tex = Screen('MakeTexture', window_ptr, instruction_img);
             Screen('DrawTexture', window_ptr, instruction_tex);
             Screen('Flip', window_ptr);
-            [resp_time, resp_code] = KbPressWait(-1);
-            if resp_code(keys.exit)
-                break
-            elseif resp_code(keys.start)
-                start_time = resp_time;
-                trial_next_start_time_expt = 0;
+            key_responded = false;
+            while ~key_responded
+                [resp_time, resp_code] = KbPressWait(-1);
+                if resp_code(keys.exit)
+                    key_responded = true;
+                    early_exit = true;
+                elseif resp_code(keys.start)
+                    key_responded = true;
+                    start_time = resp_time;
+                    trial_next_start_time_expt = 0;
+                end
             end
         end
         % a trial contains a fixation, a stimulus and a blank screen (wait
