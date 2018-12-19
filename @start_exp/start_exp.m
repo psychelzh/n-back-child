@@ -18,7 +18,7 @@ classdef start_exp < matlab.apps.AppBase
         TestingRun2    matlab.ui.control.Button
     end
 
-    
+
     properties (Access = private)
         RegisterUserApp % user register app
         UserRegisterTime % time of registering
@@ -28,11 +28,11 @@ classdef start_exp < matlab.apps.AppBase
         UserIsTestedRun2 = false; % test run 2 is completed
         LogFileName; % name of file to log result data
     end
-    
+
     properties (Access = private, Constant)
         % experiment-related properties
         ExperimentName = 'NBack';
-        StimuliSet = 0:9;
+        StimuliSet = [1:4, 6:9];
         NumberTrialsPerBlock = 10;
         % timing information
         TimeWaitStartSecs = 5;
@@ -45,7 +45,7 @@ classdef start_exp < matlab.apps.AppBase
         ImageFilePath = 'image'; % path storing instruction images
         LogFilePath = 'logs'; % path of file to log result data
     end
-    
+
     methods (Access = private)
         % prepare for new user creation
         function initializeUserCreation(app)
@@ -95,7 +95,7 @@ classdef start_exp < matlab.apps.AppBase
         % startup nback test
         [status, exception] = start_nback(app, part, run)
     end
-    
+
     methods (Access = public)
         % register current user
         function registered = registerUser(app)
