@@ -30,11 +30,20 @@ classdef start_exp < matlab.apps.AppBase
     end
     
     properties (Access = private, Constant)
-        ExperimentName = 'NBack'; % name of the experiment
+        % experiment-related properties
+        ExperimentName = 'NBack';
+        StimuliSet = 0:9;
+        NumberTrialsPerBlock = 10;
+        % timing information
+        TimeWaitStartSecs = 5;
+        TimeWaitEndSecs = 5;
+        TimeTaskCueSecs = 4;
+        TimeFixationSecs = 0.5;
+        TimeStimuliSecs = 1;
+        TimeBlankSecs = 1; % this blank screen is waiting for user's response
+        % external files
         ImageFilePath = 'image'; % path storing instruction images
         LogFilePath = 'logs'; % path of file to log result data
-        NumberTrialsPerBlock = 10; % set number of trials for a block
-        StimuliSet = 0:9; % set the stimuli set
     end
     
     methods (Access = private)
@@ -68,6 +77,17 @@ classdef start_exp < matlab.apps.AppBase
             else
                 app.Practice.BackgroundColor = 'magenta';
                 app.UserPracticedTimes = app.UserPracticedTimes + 1;
+            end
+        end
+        % process testing part
+        function testing(app, run)
+            [status, exception] = app.start_nback('test', run);
+            if status ~= 0
+                app.(sprintf('TestingRun%d', run)).BackgroundColor = 'red';
+                rethrow(exception)
+            else
+                app.(sprintf('UserIsTestedRun%d', run)) = true;
+                app.(sprintf('TestingRun%d', run)).BackgroundColor = 'green';
             end
         end
         % initialize configurations
@@ -193,14 +213,7 @@ classdef start_exp < matlab.apps.AppBase
             end
             app.ModifyUser.Visible = 'off';
             app.Practice.Enable = 'off';
-            [status, exception] = app.start_nback('test', 1);
-            app.UserIsTestedRun1 = true;
-            if status ~= 0
-                app.TestingRun1.BackgroundColor = 'red';
-                rethrow(exception)
-            else
-                app.TestingRun1.BackgroundColor = 'green';
-            end
+            app.testing(1)
         end
 
         % Button pushed function: TestingRun2
@@ -215,14 +228,7 @@ classdef start_exp < matlab.apps.AppBase
             end
             app.ModifyUser.Visible = 'off';
             app.Practice.Enable = 'off';
-            [status, exception] = app.start_nback('test', 2);
-            app.UserIsTestedRun2 = true;
-            if status ~= 0
-                app.TestingRun2.BackgroundColor = 'red';
-                rethrow(exception)
-            else
-                app.TestingRun2.BackgroundColor = 'green';
-            end
+            app.testing(2)
         end
 
         % Close request function: MainUI
