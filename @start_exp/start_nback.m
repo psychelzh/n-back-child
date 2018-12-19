@@ -81,26 +81,33 @@ try % error proof programming
     welcome_tex = Screen('MakeTexture', window_ptr, welcome_img);
     Screen('DrawTexture', window_ptr, welcome_tex);
     Screen('Flip', window_ptr);
+    % the flag to determine if the experiment should exit early
+    early_exit = false;
     % here we should detect for a key press and release
-    key_start_pressed = false;
-    while ~key_start_pressed
+    start_reponded = false;
+    while ~start_reponded
         [resp_time, resp_code] = KbStrokeWait(-1);
         if resp_code(keys.start)
-            key_start_pressed = true;
+            start_reponded = true;
             start_time = resp_time;
+        elseif resp_code(keys.exit)
+            start_reponded = true;
+            early_exit = true;
         end
     end
     % present a fixation cross to wait user perpared in test part
     if strcmp(part, 'test')
+        % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
         trial_next_start_time_expt = app.TimeWaitStartSecs;
     end
-    % the flag to determine if the experiment should exit now
-    early_exit = false;
     trial_order = 0;
     % a block contains a task cue and several trials
     for block = run_active.blocks
+        if early_exit
+            break
+        end
         % display instruction when in practice part
         if strcmp(part, 'prac')
             [instruction_img, ~, instruction_alpha] = ...
@@ -109,14 +116,14 @@ try % error proof programming
             instruction_tex = Screen('MakeTexture', window_ptr, instruction_img);
             Screen('DrawTexture', window_ptr, instruction_tex);
             Screen('Flip', window_ptr);
-            key_responded = false;
-            while ~key_responded
+            prac_instr_responded = false;
+            while ~prac_instr_responded
                 [resp_time, resp_code] = KbPressWait(-1);
                 if resp_code(keys.exit)
-                    key_responded = true;
+                    prac_instr_responded = true;
                     early_exit = true;
                 elseif resp_code(keys.start)
-                    key_responded = true;
+                    prac_instr_responded = true;
                     start_time = resp_time;
                     trial_next_start_time_expt = 0;
                 end
@@ -125,6 +132,9 @@ try % error proof programming
         % a trial contains a fixation, a stimulus and a blank screen (wait
         % for response)
         for trial = block.trials
+            if early_exit
+                break
+            end
             % store trial information
             trial_order = trial_order + 1;
             recordings.trial_id(trial_order) = trial_order;
@@ -151,9 +161,10 @@ try % error proof programming
                     KbPressWait(-1, start_time + trial_next_start_time_expt - 0.5 * ifi);
                 if resp_code(keys.exit)
                     early_exit = true;
-                    break
                 end
             else
+                % Todo: enhance early exit -> the direct call of `break` is not recommended
+                %       One possible way is to use a `while` loop.
                 trial_next_start_time_expt = ...
                     trial_next_start_time_expt + stim_bound(3);
                 % there is a screen of 1 secs for feedback in practice part
@@ -248,13 +259,10 @@ try % error proof programming
             recordings.trial_start_time_expt(trial_order) = trial_start_time_expt;
             recordings.trial_start_time(trial_order) = trial_start_timestamp - start_time;
         end
-        % otherwise the program will continue to next block
-        if early_exit
-            break
-        end
     end
     % present a fixation cross before ending in test part
     if strcmp(part, 'test')
+        % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
         WaitSecs(app.TimeWaitEndSecs);
