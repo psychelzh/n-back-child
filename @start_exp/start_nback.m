@@ -84,19 +84,18 @@ try % error proof programming
     % the flag to determine if the experiment should exit early
     early_exit = false;
     % here we should detect for a key press and release
-    start_reponded = false;
-    while ~start_reponded
+    while true
         [resp_time, resp_code] = KbStrokeWait(-1);
         if resp_code(keys.start)
-            start_reponded = true;
             start_time = resp_time;
+            break
         elseif resp_code(keys.exit)
-            start_reponded = true;
             early_exit = true;
+            break
         end
     end
     % present a fixation cross to wait user perpared in test part
-    if strcmp(part, 'test')
+    if ~early_exit && strcmp(part, 'test')
         % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
@@ -116,16 +115,15 @@ try % error proof programming
             instruction_tex = Screen('MakeTexture', window_ptr, instruction_img);
             Screen('DrawTexture', window_ptr, instruction_tex);
             Screen('Flip', window_ptr);
-            prac_instr_responded = false;
-            while ~prac_instr_responded
+            while true
                 [resp_time, resp_code] = KbPressWait(-1);
                 if resp_code(keys.exit)
-                    prac_instr_responded = true;
                     early_exit = true;
+                    break
                 elseif resp_code(keys.start)
-                    prac_instr_responded = true;
                     start_time = resp_time;
                     trial_next_start_time_expt = 0;
+                    break
                 end
             end
         end
@@ -163,8 +161,6 @@ try % error proof programming
                     early_exit = true;
                 end
             else
-                % Todo: enhance early exit -> the direct call of `break` is not recommended
-                %       One possible way is to use a `while` loop.
                 trial_next_start_time_expt = ...
                     trial_next_start_time_expt + stim_bound(3);
                 % there is a screen of 1 secs for feedback in practice part
@@ -274,7 +270,7 @@ try % error proof programming
         end
     end
     % present a fixation cross before ending in test part
-    if strcmp(part, 'test')
+    if ~early_exit && strcmp(part, 'test')
         % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
