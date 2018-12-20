@@ -127,8 +127,7 @@ try % error proof programming
                 end
             end
         end
-        % a trial contains a fixation, a stimulus and a blank screen (wait
-        % for response)
+        % there are two kinds of trials: task cue trials and stimuli trials
         for trial = block.trials
             if early_exit
                 break
@@ -142,9 +141,10 @@ try % error proof programming
             recordings.stim(trial_order) = trial.stim;
             recordings.type(trial_order) = trial.type;
             recordings.cresp(trial_order) = trial.cresp;
-            % prepare variables for trial data recording
+            % a flag variable indicating if user has pressed a key
             resp_made = false;
             trial_start_time_expt = trial_next_start_time_expt;
+            % task cue trial only present a cue indicating the task set
             if trial.type == "cue"
                 trial_next_start_time_expt = ...
                     trial_next_start_time_expt + app.TimeTaskCueSecs;
@@ -160,9 +160,8 @@ try % error proof programming
                 if resp_code(keys.exit)
                     early_exit = true;
                 end
-            else
-                trial_next_start_time_expt = ...
-                    trial_next_start_time_expt + stim_bound(3);
+            else % stimulus trial contains a fixation cross, a stimulus and a blank screen
+                trial_next_start_time_expt = trial_next_start_time_expt + stim_bound(3);
                 % there is a screen of 1 secs for feedback in practice part
                 if strcmp(part, 'prac')
                     trial_next_start_time_expt = trial_next_start_time_expt + 1;
@@ -258,13 +257,14 @@ try % error proof programming
                     Screen('Flip', window_ptr);
                     WaitSecs(1);
                 end
+                % store stimulus trial special data
                 recordings.stim_onset_time(trial_order) = stim_onset_timestamp - start_time;
                 recordings.stim_offset_time(trial_order) = stim_offset_timestamp - start_time;
                 recordings.resp(trial_order) = resp;
                 recordings.acc(trial_order) = resp_acc;
                 recordings.rt(trial_order) = resp_time;
             end
-            % recording current response data
+            % store common trial data
             recordings.trial_start_time_expt(trial_order) = trial_start_time_expt;
             recordings.trial_start_time(trial_order) = trial_start_timestamp - start_time;
         end
