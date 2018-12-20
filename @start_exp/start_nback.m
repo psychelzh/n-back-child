@@ -202,7 +202,7 @@ try % error proof programming
                     early_exit = true;
                     break
                 end
-                if resp_code(keys.left) || resp_code(keys.right)
+                if any(resp_code)
                     resp_made = true;
                 end
                 % blank screen to wait for user's reponse
@@ -216,7 +216,7 @@ try % error proof programming
                         early_exit = true;
                         break
                     end
-                    if resp_code(keys.left) || resp_code(keys.right)
+                    if any(resp_code)
                         resp_made = true;
                     end
                 end
@@ -227,7 +227,9 @@ try % error proof programming
                     resp_time = 0;
                 else
                     resp_time = resp_timestamp - stim_onset_timestamp;
-                    if resp_code(keys.left) && resp_code(keys.right)
+                    if ~resp_code(keys.left) && ~resp_code(keys.right)
+                        resp = "Neither";
+                    elseif resp_code(keys.left) && resp_code(keys.right)
                         resp = "Both";
                     elseif resp_code(keys.left)
                         resp = "Left";
@@ -240,9 +242,16 @@ try % error proof programming
                 if strcmp(part, 'prac') && trial.type ~= "filler"
                     switch resp_acc
                         case -1
-                            DrawFormattedText(window_ptr, double('请及时作答'), 'center', 'center', [1, 1, 1]);
+                            DrawFormattedText(window_ptr, double('超时了\n\n请及时作答'), 'center', 'center', [1, 1, 1]);
                         case 0
-                            DrawFormattedText(window_ptr, double('错了（×）\n\n不要灰心'), 'center', 'center', [1, 0, 0]);
+                            switch resp
+                                case "Neither"
+                                    DrawFormattedText(window_ptr, double('按错键了'), 'center', 'center', [1, 0, 0]);
+                                case "Both"
+                                    DrawFormattedText(window_ptr, double('请不要同时按左右键'), 'center', 'center', [1, 0, 0]);
+                                otherwise
+                                    DrawFormattedText(window_ptr, double('错了（×）\n\n不要灰心'), 'center', 'center', [1, 0, 0]);
+                            end
                         case 1
                             DrawFormattedText(window_ptr, double('对了（√）\n\n真棒'), 'center', 'center', [0, 1, 0]);
                     end
