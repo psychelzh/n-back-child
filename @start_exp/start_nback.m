@@ -26,11 +26,15 @@ run_active = config.runs(run);
 num_trials_total = sum(cellfun(@length, {run_active.blocks.trials}));
 
 % ----prepare data recording table ----
-rec_vars = {'trial_id', 'block', 'task', 'trial', 'stim', 'trial_start_time_expt', 'trial_start_time', 'stim_onset_time', 'stim_offset_time', 'type', 'cresp', 'resp', 'acc', 'rt'};
-rec_dflt = {nan, nan, strings, nan, nan, nan, nan, nan, nan, strings, strings, strings, -1, 0};
+vars_trial_configs = {'trial_id', 'block', 'task', 'trial', 'type', 'stim'};
+dflt_trial_configs = {nan, nan, strings, nan, strings, nan};
+vars_trial_timing = {'trial_start_time_expt', 'trial_start_time', 'stim_onset_time', 'stim_offset_time'};
+dflt_trial_timing = {nan, nan, nan, nan};
+vars_trial_resp = {'cresp', 'resp', 'acc', 'rt'};
+dflt_trial_resp = {strings, strings, nan, nan};
 recordings = cell2table( ...
-    repmat(rec_dflt, num_trials_total, 1), ...
-    'VariableNames', rec_vars);
+    repmat([dflt_trial_configs, dflt_trial_resp, dflt_trial_timing], num_trials_total, 1), ...
+    'VariableNames', [vars_trial_configs, vars_trial_resp, vars_trial_timing]);
 
 % ---- configure screen and window ----
 % setup default level of 2
