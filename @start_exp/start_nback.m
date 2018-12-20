@@ -242,19 +242,23 @@ try % error proof programming
                 if strcmp(part, 'prac') && trial.type ~= "filler"
                     switch resp_acc
                         case -1
-                            DrawFormattedText(window_ptr, double('超时了\n\n请及时作答'), 'center', 'center', [1, 1, 1]);
+                            feedback_msg = '超时了\n\n请及时作答';
+                            feedback_color = [1, 1, 1];
                         case 0
                             switch resp
                                 case "Neither"
-                                    DrawFormattedText(window_ptr, double('按错键了'), 'center', 'center', [1, 0, 0]);
+                                    feedback_msg = '按错键了';
                                 case "Both"
-                                    DrawFormattedText(window_ptr, double('请不要同时按左右键'), 'center', 'center', [1, 0, 0]);
+                                    feedback_msg = '请不要同时按左右键';
                                 otherwise
-                                    DrawFormattedText(window_ptr, double('错了（×）\n\n不要灰心'), 'center', 'center', [1, 0, 0]);
+                                    feedback_msg = '错了（×）\n\n不要灰心';
                             end
+                            feedback_color = [1, 0, 0];
                         case 1
-                            DrawFormattedText(window_ptr, double('对了（√）\n\n真棒'), 'center', 'center', [0, 1, 0]);
+                            feedback_msg = '对了（√）\n\n真棒';
+                            feedback_color = [0, 1, 0];
                     end
+                    DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
                     Screen('Flip', window_ptr);
                     WaitSecs(1);
                 end
