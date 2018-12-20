@@ -81,22 +81,32 @@ try % error proof programming
     welcome_tex = Screen('MakeTexture', window_ptr, welcome_img);
     Screen('DrawTexture', window_ptr, welcome_tex);
     Screen('Flip', window_ptr);
+    % the flag to determine if the experiment should exit early
+    early_exit = false;
     % here we should detect for a key press and release
-    [resp_time, resp_code] = KbStrokeWait(-1);
-    if resp_code(keys.start)
-        start_time = resp_time;
+    while true
+        [resp_time, resp_code] = KbStrokeWait(-1);
+        if resp_code(keys.start)
+            start_time = resp_time;
+            break
+        elseif resp_code(keys.exit)
+            early_exit = true;
+            break
+        end
     end
     % present a fixation cross to wait user perpared in test part
-    if strcmp(part, 'test')
+    if ~early_exit && strcmp(part, 'test')
+        % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
         trial_next_start_time_expt = app.TimeWaitStartSecs;
     end
-    % the flag to determine if the experiment should exit now
-    early_exit = false;
     trial_order = 0;
     % a block contains a task cue and several trials
     for block = run_active.blocks
+        if early_exit
+            break
+        end
         % display instruction when in practice part
         if strcmp(part, 'prac')
             [instruction_img, ~, instruction_alpha] = ...
@@ -105,17 +115,23 @@ try % error proof programming
             instruction_tex = Screen('MakeTexture', window_ptr, instruction_img);
             Screen('DrawTexture', window_ptr, instruction_tex);
             Screen('Flip', window_ptr);
-            [resp_time, resp_code] = KbPressWait(-1);
-            if resp_code(keys.exit)
-                break
-            elseif resp_code(keys.start)
-                start_time = resp_time;
-                trial_next_start_time_expt = 0;
+            while true
+                [resp_time, resp_code] = KbPressWait(-1);
+                if resp_code(keys.exit)
+                    early_exit = true;
+                    break
+                elseif resp_code(keys.start)
+                    start_time = resp_time;
+                    trial_next_start_time_expt = 0;
+                    break
+                end
             end
         end
-        % a trial contains a fixation, a stimulus and a blank screen (wait
-        % for response)
+        % there are two kinds of trials: task cue trials and stimuli trials
         for trial = block.trials
+            if early_exit
+                break
+            end
             % store trial information
             trial_order = trial_order + 1;
             recordings.trial_id(trial_order) = trial_order;
@@ -125,9 +141,10 @@ try % error proof programming
             recordings.stim(trial_order) = trial.stim;
             recordings.type(trial_order) = trial.type;
             recordings.cresp(trial_order) = trial.cresp;
-            % prepare variables for trial data recording
+            % a flag variable indicating if user has pressed a key
             resp_made = false;
             trial_start_time_expt = trial_next_start_time_expt;
+            % task cue trial only present a cue indicating the task set
             if trial.type == "cue"
                 trial_next_start_time_expt = ...
                     trial_next_start_time_expt + app.TimeTaskCueSecs;
@@ -142,11 +159,9 @@ try % error proof programming
                     KbPressWait(-1, start_time + trial_next_start_time_expt - 0.5 * ifi);
                 if resp_code(keys.exit)
                     early_exit = true;
-                    break
                 end
-            else
-                trial_next_start_time_expt = ...
-                    trial_next_start_time_expt + stim_bound(3);
+            else % stimulus trial contains a fixation cross, a stimulus and a blank screen
+                trial_next_start_time_expt = trial_next_start_time_expt + stim_bound(3);
                 % there is a screen of 1 secs for feedback in practice part
                 if strcmp(part, 'prac')
                     trial_next_start_time_expt = trial_next_start_time_expt + 1;
@@ -182,7 +197,7 @@ try % error proof programming
                     early_exit = true;
                     break
                 end
-                if resp_code(keys.left) || resp_code(keys.right)
+                if any(resp_code)
                     resp_made = true;
                 end
                 % blank screen to wait for user's reponse
@@ -196,7 +211,7 @@ try % error proof programming
                         early_exit = true;
                         break
                     end
-                    if resp_code(keys.left) || resp_code(keys.right)
+                    if any(resp_code)
                         resp_made = true;
                     end
                 end
@@ -207,7 +222,9 @@ try % error proof programming
                     resp_time = 0;
                 else
                     resp_time = resp_timestamp - stim_onset_timestamp;
-                    if resp_code(keys.left) && resp_code(keys.right)
+                    if ~resp_code(keys.left) && ~resp_code(keys.right)
+                        resp = "Neither";
+                    elseif resp_code(keys.left) && resp_code(keys.right)
                         resp = "Both";
                     elseif resp_code(keys.left)
                         resp = "Left";
@@ -220,32 +237,41 @@ try % error proof programming
                 if strcmp(part, 'prac') && trial.type ~= "filler"
                     switch resp_acc
                         case -1
-                            DrawFormattedText(window_ptr, double('请及时作答'), 'center', 'center', [1, 1, 1]);
+                            feedback_msg = '超时了\n\n请及时作答';
+                            feedback_color = [1, 1, 1];
                         case 0
-                            DrawFormattedText(window_ptr, double('错了（×）\n\n不要灰心'), 'center', 'center', [1, 0, 0]);
+                            switch resp
+                                case "Neither"
+                                    feedback_msg = '按错键了';
+                                case "Both"
+                                    feedback_msg = '请不要同时按左右键';
+                                otherwise
+                                    feedback_msg = '错了（×）\n\n不要灰心';
+                            end
+                            feedback_color = [1, 0, 0];
                         case 1
-                            DrawFormattedText(window_ptr, double('对了（√）\n\n真棒'), 'center', 'center', [0, 1, 0]);
+                            feedback_msg = '对了（√）\n\n真棒';
+                            feedback_color = [0, 1, 0];
                     end
+                    DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
                     Screen('Flip', window_ptr);
                     WaitSecs(1);
                 end
+                % store stimulus trial special data
                 recordings.stim_onset_time(trial_order) = stim_onset_timestamp - start_time;
                 recordings.stim_offset_time(trial_order) = stim_offset_timestamp - start_time;
                 recordings.resp(trial_order) = resp;
                 recordings.acc(trial_order) = resp_acc;
                 recordings.rt(trial_order) = resp_time;
             end
-            % recording current response data
+            % store common trial data
             recordings.trial_start_time_expt(trial_order) = trial_start_time_expt;
             recordings.trial_start_time(trial_order) = trial_start_timestamp - start_time;
         end
-        % otherwise the program will continue to next block
-        if early_exit
-            break
-        end
     end
     % present a fixation cross before ending in test part
-    if strcmp(part, 'test')
+    if ~early_exit && strcmp(part, 'test')
+        % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
         WaitSecs(app.TimeWaitEndSecs);
