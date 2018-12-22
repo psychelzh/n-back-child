@@ -100,8 +100,8 @@ classdef start_exp < matlab.apps.AppBase
         % register current user
         function registered = registerUser(app)
             % specify log file name template
-            logfile_name_store = sprintf('%s-Sub_%%03d-Time_%%s', app.ExperimentName);
-            logfile_name_search = sprintf('%s-Sub_%%d-Time_*', app.ExperimentName);
+            logfile_store_pattern = sprintf('%s-Sub_%%03d-Time_%%s.mat', app.ExperimentName);
+            logfile_search_pattern = sprintf('%s-Sub_%%d-Time_*.mat', app.ExperimentName);
             % set default as successful register
             registered = true;
             % check user name input
@@ -116,7 +116,7 @@ classdef start_exp < matlab.apps.AppBase
             end
             % check user identifier duplication
             search_result = dir(fullfile(app.LogFilePath, ...
-                sprintf(logfile_name_search, app.RegisterUserApp.Identifier)));
+                sprintf(logfile_search_pattern, app.RegisterUserApp.Identifier)));
             if ~isempty(search_result)
                 confirm_resp = uiconfirm(app.RegisterUserApp.UserRegUI, ...
                     '用户编号重复，是否返回修改？', '录入确认',  ...
@@ -135,7 +135,7 @@ classdef start_exp < matlab.apps.AppBase
             app.ValueUserName.Text = app.RegisterUserApp.Name;
             app.ValueUserSex.Text = app.RegisterUserApp.Sex;
             % return to using matlab .mat file to store results
-            app.LogFileName = sprintf(logfile_name_store, ...
+            app.LogFileName = sprintf(logfile_store_pattern, ...
                 app.RegisterUserApp.Identifier, ...
                 datestr(app.UserRegisterTime, 'yyyymmdd_HHMMSS'));
             % create user structure to store
