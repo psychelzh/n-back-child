@@ -172,10 +172,6 @@ try % error proof programming
                 end
             else % stimulus trial contains a fixation cross, a stimulus and a blank screen
                 trial_next_start_time_expt = trial_next_start_time_expt + stim_bound(3);
-                % there is a screen of 1 secs for feedback in practice part
-                if strcmp(part, 'prac')
-                    trial_next_start_time_expt = trial_next_start_time_expt + 1;
-                end
                 % set the timing boundray of three phases of a trial
                 trial_bound = trial_start_time_expt + stim_bound;
                 % draw fixation and wait for press of `Esc` to exit
@@ -246,28 +242,41 @@ try % error proof programming
                     end
                 end
                 % if practice, give feedback
-                if strcmp(part, 'prac') && trial.type ~= "filler"
-                    switch resp_acc
-                        case -1
-                            feedback_msg = '超时了\n\n请及时作答';
-                            feedback_color = [1, 1, 1];
-                        case 0
-                            switch resp
-                                case "Neither"
-                                    feedback_msg = '按错键了';
-                                case "Both"
-                                    feedback_msg = '请不要同时按左右键';
-                                otherwise
-                                    feedback_msg = '错了（×）\n\n不要灰心';
-                            end
-                            feedback_color = [1, 0, 0];
-                        case 1
-                            feedback_msg = '对了（√）\n\n真棒';
-                            feedback_color = [0, 1, 0];
+                if strcmp(part, 'prac')
+                    % set a smaller text size to display text feedback
+                    old_text_size = Screen('TextSize', window_ptr, 64);
+                    if trial.type == "filler" && resp_made
+                        feedback_msg = '还不是按键的时候';
+                        feedback_color = [1, 1, 1];
+                    else
+                        switch resp_acc
+                            case -1
+                                feedback_msg = '超时了\n\n请及时作答';
+                                feedback_color = [1, 1, 1];
+                            case 0
+                                switch resp
+                                    case "Neither"
+                                        feedback_msg = '按错键了';
+                                    case "Both"
+                                        feedback_msg = '请不要同时按左右键';
+                                    otherwise
+                                        feedback_msg = '错了（×）\n\n不要灰心';
+                                end
+                                feedback_color = [1, 0, 0];
+                            case 1
+                                feedback_msg = '对了（√）\n\n真棒';
+                                feedback_color = [0, 1, 0];
+                        end
                     end
-                    DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
-                    Screen('Flip', window_ptr);
-                    WaitSecs(1);
+                    % no feedback if no response to "filler" stimuli
+                    if ~(trial.type == "filler" && ~resp_made)
+                        DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
+                        Screen('Flip', window_ptr);
+                        WaitSecs(1);
+                        trial_next_start_time_expt = trial_next_start_time_expt + 1;
+                    end
+                    % restore default larger text size
+                    Screen('TextSize', window_ptr, old_text_size);
                 end
                 % store stimulus trial special data
                 recordings.stim_onset_time(trial_order) = stim_onset_timestamp - start_time;
