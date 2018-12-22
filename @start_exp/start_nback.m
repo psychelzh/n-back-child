@@ -241,7 +241,9 @@ try % error proof programming
                     else
                         resp = "Right";
                     end
-                    resp_acc = double(resp == trial.cresp);
+                    if trial.type ~= "filler"
+                        resp_acc = double(resp == trial.cresp);
+                    end
                 end
                 % if practice, give feedback
                 if strcmp(part, 'prac') && trial.type ~= "filler"
