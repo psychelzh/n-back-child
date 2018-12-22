@@ -30,8 +30,8 @@ vars_trial_configs = {'trial_id', 'block', 'task', 'trial', 'type', 'stim'};
 dflt_trial_configs = {nan, nan, strings, nan, strings, nan};
 vars_trial_timing = {'trial_start_time_expt', 'trial_start_time', 'stim_onset_time', 'stim_offset_time'};
 dflt_trial_timing = {nan, nan, nan, nan};
-vars_trial_resp = {'cresp', 'resp', 'acc', 'rt'};
-dflt_trial_resp = {strings, strings, nan, nan};
+vars_trial_resp = {'cresp', 'resp', 'resp_raw', 'acc', 'rt'};
+dflt_trial_resp = {strings, strings, strings, nan, nan};
 recordings = cell2table( ...
     repmat([dflt_trial_configs, dflt_trial_resp, dflt_trial_timing], num_trials_total, 1), ...
     'VariableNames', [vars_trial_configs, vars_trial_resp, vars_trial_timing]);
@@ -228,6 +228,8 @@ try % error proof programming
                     resp_time = 0;
                 else
                     resp_time = resp_timestamp - stim_onset_timestamp;
+                    % use "|" as delimiter for the KeyName of "|" is "\\"
+                    resp_raw = string(strjoin(cellstr(KbName(resp_code)), '|'));
                     if ~resp_code(keys.left) && ~resp_code(keys.right)
                         resp = "Neither";
                     elseif resp_code(keys.left) && resp_code(keys.right)
@@ -282,6 +284,7 @@ try % error proof programming
                 recordings.stim_onset_time(trial_order) = stim_onset_timestamp - start_time;
                 recordings.stim_offset_time(trial_order) = stim_offset_timestamp - start_time;
                 recordings.resp(trial_order) = resp;
+                recordings.resp_raw(trial_order) = resp_raw;
                 recordings.acc(trial_order) = resp_acc;
                 recordings.rt(trial_order) = resp_time;
             end
