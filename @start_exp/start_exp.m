@@ -41,6 +41,7 @@ classdef start_exp < matlab.apps.AppBase
         TimeFixationSecs = 0.5;
         TimeStimuliSecs = 1;
         TimeBlankSecs = 1; % this blank screen is waiting for user's response
+        TimeFeedbackSecs = 0.3;
         % external files
         ImageFilePath = 'image'; % path storing instruction images
         LogFilePath = 'logs'; % path of file to log result data

@@ -271,9 +271,9 @@ try % error proof programming
                     % no feedback if no response to "filler" stimuli
                     if ~(trial.type == "filler" && ~resp_made)
                         DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
-                        Screen('Flip', window_ptr);
-                        WaitSecs(1);
-                        trial_next_start_time_expt = trial_next_start_time_expt + 1;
+                        Screen('Flip', window_ptr, start_time + trial_bound(3) - 0.5 * ifi);
+                        WaitSecs(app.TimeFeedbackSecs);
+                        trial_next_start_time_expt = trial_next_start_time_expt + app.TimeFeedbackSecs;
                     end
                     % restore default larger text size
                     Screen('TextSize', window_ptr, old_text_size);
