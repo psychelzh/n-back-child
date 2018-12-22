@@ -74,8 +74,14 @@ try % error proof programming
     % ---- keyboard settings ----
     keys.start = KbName('s');
     keys.exit = KbName('Escape');
-    keys.left = KbName('1!');
-    keys.right = KbName('4$');
+    switch part
+        case 'prac'
+            keys.left = KbName('LeftArrow');
+            keys.right = KbName('RightArrow');
+        case 'test'
+            keys.left = KbName('1!');
+            keys.right = KbName('4$');
+    end
 
     % ---- present stimuli ----
     % display welcome screen and wait for a press of 's' to start
