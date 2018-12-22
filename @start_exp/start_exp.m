@@ -91,7 +91,7 @@ classdef start_exp < matlab.apps.AppBase
             end
         end
         % initialize configurations
-        sequence = init_config(app, part)
+        config = init_config(app, part)
         % startup nback test
         [status, exception] = start_nback(app, part, run)
     end
