@@ -101,7 +101,7 @@ classdef start_exp < matlab.apps.AppBase
         function registered = registerUser(app)
             % specify log file name template
             logfile_store_pattern = sprintf('%s-Sub_%%03d-Time_%%s.mat', app.ExperimentName);
-            logfile_search_pattern = sprintf('%s-Sub_%%d-Time_*.mat', app.ExperimentName);
+            logfile_search_pattern = sprintf('%s-Sub_%%03d-Time_*.mat', app.ExperimentName);
             % set default as successful register
             registered = true;
             % check user name input
