@@ -17,7 +17,7 @@ switch part
     case 'prac'
         % set different random seed for each user
         rng('Shuffle')
-        run_blocks = {task_names};
+        run_blocks = {randsample(task_names, length(task_names))};
     case 'test'
         % fix random seed to ensure sequences for all users are the same
         rng(0)
