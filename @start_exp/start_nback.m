@@ -224,6 +224,7 @@ try % error proof programming
                 % analyze user's response
                 if ~resp_made
                     resp = "";
+                    resp_raw = "";
                     resp_acc = -1;
                     resp_time = 0;
                 else
