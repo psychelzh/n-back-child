@@ -26,6 +26,10 @@ exception = [];
 % ---- prepare sequences ----
 config = app.init_config(part);
 run_active = config.runs(run);
+% select the specified task when in practice part
+if part == "prac" && ~isempty(task)
+    run_active = run_active([run_active.blocks.name] == task);
+end
 num_trials_total = sum(cellfun(@length, {run_active.blocks.trials}));
 
 % ----prepare data recording table ----
