@@ -124,8 +124,8 @@ try % error proof programming
         if early_exit
             break
         end
-        % display instruction when in practice part
-        if part == "prac"
+        % display instruction when separately practicing
+        if part == "prac" && ~isempty(task)
             [instruction_img, ~, instruction_alpha] = ...
                 imread(fullfile(app.ImageFilePath, sprintf('%s.png', block.name)));
             instruction_img(:, :, 4) = instruction_alpha;
