@@ -110,6 +110,11 @@ classdef start_exp < matlab.apps.AppBase
         end
         % process testing part
         function testing(app, run)
+            app.ModifyUser.Visible = 'off';
+            app.Practice0back.Enable = 'off';
+            app.Practice1back.Enable = 'off';
+            app.Practice2back.Enable = 'off';
+            app.PracticeAll.Enable = 'off';
             [status, exception] = ...
                 app.start_nback('Part', "test", 'Run', run);
             if status ~= 0
@@ -250,8 +255,6 @@ classdef start_exp < matlab.apps.AppBase
                     return
                 end
             end
-            app.ModifyUser.Visible = 'off';
-            app.PracticeAll.Enable = 'off';
             app.testing(1)
         end
 
@@ -265,8 +268,6 @@ classdef start_exp < matlab.apps.AppBase
                     return
                 end
             end
-            app.ModifyUser.Visible = 'off';
-            app.PracticeAll.Enable = 'off';
             app.testing(2)
         end
 
