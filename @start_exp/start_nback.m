@@ -1,4 +1,4 @@
-function [status, exception] = start_nback(app, part, run)
+function [status, exception] = start_nback(app, varargin)
 % Copyright (C) 2018, Liang Zhang - All Rights Reserved.
 % @author      Liang Zhang <psychelzh@outlook.com>
 % @description This script is used to display stimuli in fMRI research
@@ -7,14 +7,17 @@ function [status, exception] = start_nback(app, part, run)
 % please mannually make sure Psychtoolbox is installed
 
 % ---- check input arguments ----
-% default to start practice part
-if nargin < 2
-    part = 'prac';
-end
-% default to use the first run
-if nargin < 3
-    run = 1;
-end
+p = inputParser;
+expected_parts = ["prac", "test"];
+expected_tasks = ["zero-back", "one-back", "two-back"];
+p.addParameter('Part', 'prac', @(x) any(expected_parts == x))
+p.addParameter('Run', 1, @isnumeric)
+% "Task" param is silently ignored when "Part" param is test
+p.addParameter('Task', [], @(x) any(expected_tasks == x))
+p.parse(varargin{:})
+part = string(p.Results.Part);
+run = p.Results.Run;
+task = string(p.Results.Task);
 
 % ---- set default output ----
 status = 0;
@@ -105,7 +108,7 @@ try % error proof programming
         end
     end
     % present a fixation cross to wait user perpared in test part
-    if ~early_exit && strcmp(part, 'test')
+    if ~early_exit && part == "test"
         % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
@@ -118,7 +121,7 @@ try % error proof programming
             break
         end
         % display instruction when in practice part
-        if strcmp(part, 'prac')
+        if part == "prac"
             [instruction_img, ~, instruction_alpha] = ...
                 imread(fullfile(app.ImageFilePath, sprintf('%s.png', block.name)));
             instruction_img(:, :, 4) = instruction_alpha;
@@ -245,7 +248,7 @@ try % error proof programming
                     end
                 end
                 % if practice, give feedback
-                if strcmp(part, 'prac')
+                if part == "prac"
                     % set a smaller text size to display text feedback
                     old_text_size = Screen('TextSize', window_ptr, 64);
                     if trial.type == "filler" && resp_made
@@ -295,7 +298,7 @@ try % error proof programming
         end
     end
     % present a fixation cross before ending in test part
-    if ~early_exit && strcmp(part, 'test')
+    if ~early_exit && part == "test"
         % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
