@@ -35,6 +35,3 @@ octave-workspace
 
 # program logs
 logs
-
-# ignore app designer binary files
-*.mlapp

@@ -165,6 +165,7 @@ classdef register_user < matlab.apps.AppBase
             app.ConfirmRegisterUser.BackgroundColor = [1 1 1];
             app.ConfirmRegisterUser.FontName = 'SimHei';
             app.ConfirmRegisterUser.FontWeight = 'bold';
+            app.ConfirmRegisterUser.Tooltip = {'确认录入当前被试。'};
             app.ConfirmRegisterUser.Position = [115 18 69 22];
             app.ConfirmRegisterUser.Text = '录入';
         end

@@ -1,4 +1,4 @@
-function [status, exception] = start_nback(app, part, run)
+function [status, exception, recordings] = start_nback(app, varargin)
 % Copyright (C) 2018, Liang Zhang - All Rights Reserved.
 % @author      Liang Zhang <psychelzh@outlook.com>
 % @description This script is used to display stimuli in fMRI research
@@ -7,14 +7,17 @@ function [status, exception] = start_nback(app, part, run)
 % please mannually make sure Psychtoolbox is installed
 
 % ---- check input arguments ----
-% default to start practice part
-if nargin < 2
-    part = 'prac';
-end
-% default to use the first run
-if nargin < 3
-    run = 1;
-end
+p = inputParser;
+expected_parts = ["prac", "test"];
+expected_tasks = ["zero-back", "one-back", "two-back", "all"];
+p.addParameter('Part', 'prac', @(x) any(expected_parts == x))
+p.addParameter('Run', 1, @isnumeric)
+% "Task" param is silently ignored when "Part" param is test
+p.addParameter('Task', "all", @(x) any(expected_tasks == x))
+p.parse(varargin{:})
+part = string(p.Results.Part);
+run = p.Results.Run;
+task = string(p.Results.Task);
 
 % ---- set default output ----
 status = 0;
@@ -23,6 +26,10 @@ exception = [];
 % ---- prepare sequences ----
 config = app.init_config(part);
 run_active = config.runs(run);
+% select the specified task when in practice part
+if part == "prac" && task ~= "all"
+    run_active.blocks([run_active.blocks.name] ~= task) = [];
+end
 num_trials_total = sum(cellfun(@length, {run_active.blocks.trials}));
 
 % ----prepare data recording table ----
@@ -30,8 +37,8 @@ vars_trial_configs = {'trial_id', 'block', 'task', 'trial', 'type', 'stim'};
 dflt_trial_configs = {nan, nan, strings, nan, strings, nan};
 vars_trial_timing = {'trial_start_time_expt', 'trial_start_time', 'stim_onset_time', 'stim_offset_time'};
 dflt_trial_timing = {nan, nan, nan, nan};
-vars_trial_resp = {'cresp', 'resp', 'acc', 'rt'};
-dflt_trial_resp = {strings, strings, nan, nan};
+vars_trial_resp = {'cresp', 'resp', 'resp_raw', 'acc', 'rt'};
+dflt_trial_resp = {strings, strings, strings, nan, nan};
 recordings = cell2table( ...
     repmat([dflt_trial_configs, dflt_trial_resp, dflt_trial_timing], num_trials_total, 1), ...
     'VariableNames', [vars_trial_configs, vars_trial_resp, vars_trial_timing]);
@@ -74,8 +81,14 @@ try % error proof programming
     % ---- keyboard settings ----
     keys.start = KbName('s');
     keys.exit = KbName('Escape');
-    keys.left = KbName('1!');
-    keys.right = KbName('4$');
+    switch part
+        case 'prac'
+            keys.left = KbName('LeftArrow');
+            keys.right = KbName('RightArrow');
+        case 'test'
+            keys.left = KbName('1!');
+            keys.right = KbName('4$');
+    end
 
     % ---- present stimuli ----
     % display welcome screen and wait for a press of 's' to start
@@ -99,11 +112,15 @@ try % error proof programming
         end
     end
     % present a fixation cross to wait user perpared in test part
-    if ~early_exit && strcmp(part, 'test')
-        % test cannot be stopped here
-        DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
-        Screen('Flip', window_ptr);
-        trial_next_start_time_expt = app.TimeWaitStartSecs;
+    if ~early_exit 
+        if part == "test"
+            % test cannot be stopped here
+            DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
+            Screen('Flip', window_ptr);
+            trial_next_start_time_expt = app.TimeWaitStartSecs;
+        else
+            trial_next_start_time_expt = 0;
+        end
     end
     trial_order = 0;
     % a block contains a task cue and several trials
@@ -111,8 +128,8 @@ try % error proof programming
         if early_exit
             break
         end
-        % display instruction when in practice part
-        if strcmp(part, 'prac')
+        % display instruction when separately practicing
+        if part == "prac" && task ~= "all"
             [instruction_img, ~, instruction_alpha] = ...
                 imread(fullfile(app.ImageFilePath, sprintf('%s.png', block.name)));
             instruction_img(:, :, 4) = instruction_alpha;
@@ -166,10 +183,6 @@ try % error proof programming
                 end
             else % stimulus trial contains a fixation cross, a stimulus and a blank screen
                 trial_next_start_time_expt = trial_next_start_time_expt + stim_bound(3);
-                % there is a screen of 1 secs for feedback in practice part
-                if strcmp(part, 'prac')
-                    trial_next_start_time_expt = trial_next_start_time_expt + 1;
-                end
                 % set the timing boundray of three phases of a trial
                 trial_bound = trial_start_time_expt + stim_bound;
                 % draw fixation and wait for press of `Esc` to exit
@@ -222,10 +235,13 @@ try % error proof programming
                 % analyze user's response
                 if ~resp_made
                     resp = "";
+                    resp_raw = "";
                     resp_acc = -1;
                     resp_time = 0;
                 else
                     resp_time = resp_timestamp - stim_onset_timestamp;
+                    % use "|" as delimiter for the KeyName of "|" is "\\"
+                    resp_raw = string(strjoin(cellstr(KbName(resp_code)), '|'));
                     if ~resp_code(keys.left) && ~resp_code(keys.right)
                         resp = "Neither";
                     elseif resp_code(keys.left) && resp_code(keys.right)
@@ -235,36 +251,54 @@ try % error proof programming
                     else
                         resp = "Right";
                     end
-                    resp_acc = double(resp == trial.cresp);
+                    if trial.type ~= "filler"
+                        resp_acc = double(resp == trial.cresp);
+                    else
+                        resp_acc = nan;
+                    end
                 end
                 % if practice, give feedback
-                if strcmp(part, 'prac') && trial.type ~= "filler"
-                    switch resp_acc
-                        case -1
-                            feedback_msg = '超时了\n\n请及时作答';
-                            feedback_color = [1, 1, 1];
-                        case 0
-                            switch resp
-                                case "Neither"
-                                    feedback_msg = '按错键了';
-                                case "Both"
-                                    feedback_msg = '请不要同时按左右键';
-                                otherwise
-                                    feedback_msg = '错了（×）\n\n不要灰心';
-                            end
-                            feedback_color = [1, 0, 0];
-                        case 1
-                            feedback_msg = '对了（√）\n\n真棒';
-                            feedback_color = [0, 1, 0];
+                if part == "prac"
+                    % set a smaller text size to display text feedback
+                    old_text_size = Screen('TextSize', window_ptr, 64);
+                    if trial.type == "filler" && resp_made
+                        feedback_msg = '还不是按键的时候';
+                        feedback_color = [1, 1, 1];
+                    else
+                        switch resp_acc
+                            case -1
+                                feedback_msg = '超时了\n\n请及时作答';
+                                feedback_color = [1, 1, 1];
+                            case 0
+                                switch resp
+                                    case "Neither"
+                                        feedback_msg = '按错键了';
+                                    case "Both"
+                                        feedback_msg = '请不要同时按左右键';
+                                    otherwise
+                                        feedback_msg = '错了（×）\n\n不要灰心';
+                                end
+                                feedback_color = [1, 0, 0];
+                            case 1
+                                feedback_msg = '对了（√）\n\n真棒';
+                                feedback_color = [0, 1, 0];
+                        end
                     end
-                    DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
-                    Screen('Flip', window_ptr);
-                    WaitSecs(1);
+                    % no feedback if no response to "filler" stimuli
+                    if ~(trial.type == "filler" && ~resp_made)
+                        DrawFormattedText(window_ptr, double(feedback_msg), 'center', 'center', feedback_color);
+                        Screen('Flip', window_ptr, start_time + trial_bound(3) - 0.5 * ifi);
+                        WaitSecs(app.TimeFeedbackSecs);
+                        trial_next_start_time_expt = trial_next_start_time_expt + app.TimeFeedbackSecs;
+                    end
+                    % restore default larger text size
+                    Screen('TextSize', window_ptr, old_text_size);
                 end
                 % store stimulus trial special data
                 recordings.stim_onset_time(trial_order) = stim_onset_timestamp - start_time;
                 recordings.stim_offset_time(trial_order) = stim_offset_timestamp - start_time;
                 recordings.resp(trial_order) = resp;
+                recordings.resp_raw(trial_order) = resp_raw;
                 recordings.acc(trial_order) = resp_acc;
                 recordings.rt(trial_order) = resp_time;
             end
@@ -274,7 +308,7 @@ try % error proof programming
         end
     end
     % present a fixation cross before ending in test part
-    if ~early_exit && strcmp(part, 'test')
+    if ~early_exit && part == "test"
         % test cannot be stopped here
         DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
         Screen('Flip', window_ptr);
