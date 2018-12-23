@@ -12,8 +12,16 @@ classdef start_exp < matlab.apps.AppBase
         ValueUserSex   matlab.ui.control.Label
         NewUser        matlab.ui.control.Button
         ModifyUser     matlab.ui.control.Button
+        PracticePanel  matlab.ui.container.Panel
+        Practice0back  matlab.ui.control.Button
+        PC0back        matlab.ui.control.Label
+        Practice1back  matlab.ui.control.Button
+        PC1back        matlab.ui.control.Label
+        Practice2back  matlab.ui.control.Button
+        PC2back        matlab.ui.control.Label
+        PracticeAll    matlab.ui.control.Button
+        PCAll          matlab.ui.control.Label
         TestingPanel   matlab.ui.container.Panel
-        Practice       matlab.ui.control.Button
         TestingRun1    matlab.ui.control.Button
         TestingRun2    matlab.ui.control.Button
     end
@@ -62,8 +70,8 @@ classdef start_exp < matlab.apps.AppBase
             % disable all the buttons
             app.ModifyUser.Visible = 'off';
             app.NewUser.Enable = 'off';
-            app.Practice.BackgroundColor = 'white';
-            app.Practice.Enable = 'off';
+            app.PracticeAll.BackgroundColor = 'white';
+            app.PracticeAll.Enable = 'off';
             app.TestingRun1.BackgroundColor = 'white';
             app.TestingRun1.Enable = 'off';
             app.TestingRun2.BackgroundColor = 'white';
@@ -73,10 +81,10 @@ classdef start_exp < matlab.apps.AppBase
         function practice(app)
             [status, exception] = app.start_nback('prac');
             if status ~= 0
-                app.Practice.BackgroundColor = 'red';
+                app.PracticeAll.BackgroundColor = 'red';
                 rethrow(exception)
             else
-                app.Practice.BackgroundColor = 'magenta';
+                app.PracticeAll.BackgroundColor = 'magenta';
                 app.UserPracticedTimes = app.UserPracticedTimes + 1;
             end
         end
@@ -149,7 +157,7 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.Enable = 'on';
             app.ModifyUser.Visible = 'on';
             % enable testing now
-            app.Practice.Enable = 'on';
+            app.PracticeAll.Enable = 'on';
             app.TestingRun1.Enable = 'on';
             app.TestingRun2.Enable = 'on';
         end
@@ -162,7 +170,7 @@ classdef start_exp < matlab.apps.AppBase
             % initialize buttons
             app.ModifyUser.Visible = 'off';
             app.NewUser.Enable = 'on';
-            app.Practice.Enable = 'off';
+            app.PracticeAll.Enable = 'off';
             app.TestingRun1.Enable = 'off';
             app.TestingRun2.Enable = 'off';
             % create log file path if not existed
@@ -195,8 +203,8 @@ classdef start_exp < matlab.apps.AppBase
             app.RegisterUserApp = register_user(app, user);
         end
 
-        % Button pushed function: Practice
-        function PracticeButtonPushed(app, event)
+        % Button pushed function: PracticeAll
+        function PracticeAllButtonPushed2(app, event)
             app.ModifyUser.Visible = 'off';
             app.practice();
         end
@@ -212,7 +220,7 @@ classdef start_exp < matlab.apps.AppBase
                 end
             end
             app.ModifyUser.Visible = 'off';
-            app.Practice.Enable = 'off';
+            app.PracticeAll.Enable = 'off';
             app.testing(1)
         end
 
@@ -227,7 +235,7 @@ classdef start_exp < matlab.apps.AppBase
                 end
             end
             app.ModifyUser.Visible = 'off';
-            app.Practice.Enable = 'off';
+            app.PracticeAll.Enable = 'off';
             app.testing(2)
         end
 
@@ -256,7 +264,7 @@ classdef start_exp < matlab.apps.AppBase
             app.MainUI = uifigure;
             app.MainUI.AutoResizeChildren = 'off';
             app.MainUI.Color = [0.902 0.902 0.902];
-            app.MainUI.Position = [100 100 600 400];
+            app.MainUI.Position = [100 100 600 561];
             app.MainUI.Name = '测验向导';
             app.MainUI.Resize = 'off';
             app.MainUI.CloseRequestFcn = createCallbackFcn(app, @MainUICloseRequest, true);
@@ -269,7 +277,7 @@ classdef start_exp < matlab.apps.AppBase
             app.UserPanel.Title = '当前被试';
             app.UserPanel.FontName = 'SimHei';
             app.UserPanel.FontWeight = 'bold';
-            app.UserPanel.Position = [171 185 260 179];
+            app.UserPanel.Position = [171 342 260 180];
 
             % Create LabelUserId
             app.LabelUserId = uilabel(app.UserPanel);
@@ -278,14 +286,14 @@ classdef start_exp < matlab.apps.AppBase
             app.LabelUserId.FontName = 'SimHei';
             app.LabelUserId.FontWeight = 'bold';
             app.LabelUserId.Tooltip = {'输入被试的编号，必须是一个大于0的整数。'};
-            app.LabelUserId.Position = [60 120 30 22];
+            app.LabelUserId.Position = [60 121 30 22];
             app.LabelUserId.Text = '编号';
 
             % Create ValueUserId
             app.ValueUserId = uilabel(app.UserPanel);
             app.ValueUserId.HorizontalAlignment = 'center';
             app.ValueUserId.FontName = 'SimSun';
-            app.ValueUserId.Position = [139 120 89 22];
+            app.ValueUserId.Position = [139 121 89 22];
             app.ValueUserId.Text = '待录入';
 
             % Create LabelUserName
@@ -294,14 +302,14 @@ classdef start_exp < matlab.apps.AppBase
             app.LabelUserName.FontName = 'SimHei';
             app.LabelUserName.FontWeight = 'bold';
             app.LabelUserName.Tooltip = {'输入被试的姓名，中英文都可以。'};
-            app.LabelUserName.Position = [60 87 30 22];
+            app.LabelUserName.Position = [60 88 30 22];
             app.LabelUserName.Text = '姓名';
 
             % Create ValueUserName
             app.ValueUserName = uilabel(app.UserPanel);
             app.ValueUserName.HorizontalAlignment = 'center';
             app.ValueUserName.FontName = 'SimSun';
-            app.ValueUserName.Position = [139 87 89 22];
+            app.ValueUserName.Position = [139 88 89 22];
             app.ValueUserName.Text = '待录入';
 
             % Create LabelUserSex
@@ -310,14 +318,14 @@ classdef start_exp < matlab.apps.AppBase
             app.LabelUserSex.FontName = 'SimHei';
             app.LabelUserSex.FontWeight = 'bold';
             app.LabelUserSex.Tooltip = {'下拉选择被试的性别。'};
-            app.LabelUserSex.Position = [60 55 30 22];
+            app.LabelUserSex.Position = [60 56 30 22];
             app.LabelUserSex.Text = '性别';
 
             % Create ValueUserSex
             app.ValueUserSex = uilabel(app.UserPanel);
             app.ValueUserSex.HorizontalAlignment = 'center';
             app.ValueUserSex.FontName = 'SimSun';
-            app.ValueUserSex.Position = [139 55 89 22];
+            app.ValueUserSex.Position = [139 56 89 22];
             app.ValueUserSex.Text = '待录入';
 
             % Create NewUser
@@ -326,7 +334,7 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.BackgroundColor = [1 1 1];
             app.NewUser.FontName = 'SimHei';
             app.NewUser.FontWeight = 'bold';
-            app.NewUser.Position = [149 14 69 22];
+            app.NewUser.Position = [149 15 69 22];
             app.NewUser.Text = '新用户';
 
             % Create ModifyUser
@@ -335,45 +343,109 @@ classdef start_exp < matlab.apps.AppBase
             app.ModifyUser.BackgroundColor = [1 1 1];
             app.ModifyUser.FontName = 'SimHei';
             app.ModifyUser.FontWeight = 'bold';
-            app.ModifyUser.Position = [42 14 69 22];
+            app.ModifyUser.Position = [42 15 69 22];
             app.ModifyUser.Text = '修改';
+
+            % Create PracticePanel
+            app.PracticePanel = uipanel(app.MainUI);
+            app.PracticePanel.AutoResizeChildren = 'off';
+            app.PracticePanel.ForegroundColor = [0 0.451 0.7412];
+            app.PracticePanel.TitlePosition = 'centertop';
+            app.PracticePanel.Title = '练习部分';
+            app.PracticePanel.FontName = 'SimHei';
+            app.PracticePanel.FontWeight = 'bold';
+            app.PracticePanel.Position = [121 142 360 180];
+
+            % Create Practice0back
+            app.Practice0back = uibutton(app.PracticePanel, 'push');
+            app.Practice0back.BackgroundColor = [1 1 1];
+            app.Practice0back.FontName = 'SimHei';
+            app.Practice0back.FontWeight = 'bold';
+            app.Practice0back.Position = [34 115 69 22];
+            app.Practice0back.Text = '0-back';
+
+            % Create PC0back
+            app.PC0back = uilabel(app.PracticePanel);
+            app.PC0back.HorizontalAlignment = 'center';
+            app.PC0back.FontName = 'SimHei';
+            app.PC0back.Position = [26 88 80 22];
+            app.PC0back.Text = '正确率';
+
+            % Create Practice1back
+            app.Practice1back = uibutton(app.PracticePanel, 'push');
+            app.Practice1back.BackgroundColor = [1 1 1];
+            app.Practice1back.FontName = 'SimHei';
+            app.Practice1back.FontWeight = 'bold';
+            app.Practice1back.Position = [145 115 69 22];
+            app.Practice1back.Text = '1-back';
+
+            % Create PC1back
+            app.PC1back = uilabel(app.PracticePanel);
+            app.PC1back.HorizontalAlignment = 'center';
+            app.PC1back.FontName = 'SimHei';
+            app.PC1back.Position = [139 88 80 22];
+            app.PC1back.Text = '正确率';
+
+            % Create Practice2back
+            app.Practice2back = uibutton(app.PracticePanel, 'push');
+            app.Practice2back.BackgroundColor = [1 1 1];
+            app.Practice2back.FontName = 'SimHei';
+            app.Practice2back.FontWeight = 'bold';
+            app.Practice2back.Position = [256 115 69 22];
+            app.Practice2back.Text = '2-back';
+
+            % Create PC2back
+            app.PC2back = uilabel(app.PracticePanel);
+            app.PC2back.HorizontalAlignment = 'center';
+            app.PC2back.FontName = 'SimHei';
+            app.PC2back.Position = [252 88 80 22];
+            app.PC2back.Text = '正确率';
+
+            % Create PracticeAll
+            app.PracticeAll = uibutton(app.PracticePanel, 'push');
+            app.PracticeAll.ButtonPushedFcn = createCallbackFcn(app, @PracticeAllButtonPushed2, true);
+            app.PracticeAll.BackgroundColor = [1 1 1];
+            app.PracticeAll.FontName = 'SimHei';
+            app.PracticeAll.FontWeight = 'bold';
+            app.PracticeAll.FontColor = [1 0 0];
+            app.PracticeAll.Tooltip = {'将0-back，1-back和2-back综合在一起练习。'};
+            app.PracticeAll.Position = [146 45 69 22];
+            app.PracticeAll.Text = '综合';
+
+            % Create PCAll
+            app.PCAll = uilabel(app.PracticePanel);
+            app.PCAll.HorizontalAlignment = 'center';
+            app.PCAll.FontName = 'SimHei';
+            app.PCAll.Position = [139 18 80 22];
+            app.PCAll.Text = '正确率';
 
             % Create TestingPanel
             app.TestingPanel = uipanel(app.MainUI);
             app.TestingPanel.AutoResizeChildren = 'off';
             app.TestingPanel.ForegroundColor = [0 0.451 0.7412];
             app.TestingPanel.TitlePosition = 'centertop';
-            app.TestingPanel.Title = '开始测验';
+            app.TestingPanel.Title = '正式测试';
             app.TestingPanel.FontName = 'SimHei';
             app.TestingPanel.FontWeight = 'bold';
-            app.TestingPanel.Position = [171 48 260 123];
-
-            % Create Practice
-            app.Practice = uibutton(app.TestingPanel, 'push');
-            app.Practice.ButtonPushedFcn = createCallbackFcn(app, @PracticeButtonPushed, true);
-            app.Practice.BackgroundColor = [1 1 1];
-            app.Practice.FontName = 'SimHei';
-            app.Practice.FontWeight = 'bold';
-            app.Practice.Position = [95 71 69 22];
-            app.Practice.Text = '练习';
+            app.TestingPanel.Position = [171 42 260 80];
 
             % Create TestingRun1
             app.TestingRun1 = uibutton(app.TestingPanel, 'push');
             app.TestingRun1.ButtonPushedFcn = createCallbackFcn(app, @TestingRun1ButtonPushed, true);
-            app.TestingRun1.BackgroundColor = [0.8 0.8 0.8];
+            app.TestingRun1.BackgroundColor = [1 1 1];
             app.TestingRun1.FontName = 'SimHei';
             app.TestingRun1.FontWeight = 'bold';
-            app.TestingRun1.Position = [35 25 83 22];
-            app.TestingRun1.Text = '正式-第一次';
+            app.TestingRun1.Position = [50 22 60 22];
+            app.TestingRun1.Text = '第一次';
 
             % Create TestingRun2
             app.TestingRun2 = uibutton(app.TestingPanel, 'push');
             app.TestingRun2.ButtonPushedFcn = createCallbackFcn(app, @TestingRun2ButtonPushed, true);
-            app.TestingRun2.BackgroundColor = [0.8 0.8 0.8];
+            app.TestingRun2.BackgroundColor = [1 1 1];
             app.TestingRun2.FontName = 'SimHei';
             app.TestingRun2.FontWeight = 'bold';
-            app.TestingRun2.Position = [142 25 83 22];
-            app.TestingRun2.Text = '正式-第二次';
+            app.TestingRun2.Position = [160 22 60 22];
+            app.TestingRun2.Text = '第二次';
         end
     end
 
