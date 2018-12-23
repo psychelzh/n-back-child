@@ -78,19 +78,40 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingRun2.Enable = 'off';
         end
         % process practice part
-        function practice(app)
-            [status, exception] = app.start_nback('prac');
+        function practice(app, task)
+            [status, exception, recordings] = ...
+                app.start_nback('Part', "prac", 'Task', task);
+            calling_button = 'PracticeAll';
+            accuracy_label = 'PCAll';
+            if ~isempty(task)
+                switch task
+                    case "zero-back"
+                        calling_button = 'Practice0back';
+                        accuracy_label = 'PC0back';
+                    case "one-back"
+                        calling_button = 'Practice1back';
+                        accuracy_label = 'PC1back';
+                    case "two-back"
+                        calling_button = 'Practice2back';
+                        accuracy_label = 'PC2back';
+                end
+            end
             if status ~= 0
-                app.PracticeAll.BackgroundColor = 'red';
+                app.(calling_button).BackgroundColor = 'red';
                 rethrow(exception)
             else
-                app.PracticeAll.BackgroundColor = 'magenta';
+                app.(calling_button).BackgroundColor = 'green';
                 app.UserPracticedTimes = app.UserPracticedTimes + 1;
+                % set accuracy label
+                pc = sum(recordings.acc == 1) / sum(~isnan(recordings.acc));
+                app.(accuracy_label).Text = sprintf('正确率：%.1f%%', pc * 100);
+                app.(accuracy_label).Visible = 'on';
             end
         end
         % process testing part
         function testing(app, run)
-            [status, exception] = app.start_nback('test', run);
+            [status, exception] = ...
+                app.start_nback('Part', "test", 'Run', run);
             if status ~= 0
                 app.(sprintf('TestingRun%d', run)).BackgroundColor = 'red';
                 rethrow(exception)
@@ -102,7 +123,7 @@ classdef start_exp < matlab.apps.AppBase
         % initialize configurations
         config = init_config(app, part)
         % startup nback test
-        [status, exception] = start_nback(app, part, run)
+        [status, exception, recordings] = start_nback(app, varargin)
     end
     
     methods (Access = public)
@@ -157,6 +178,9 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.Enable = 'on';
             app.ModifyUser.Visible = 'on';
             % enable testing now
+            app.Practice0back.Enable = 'on';
+            app.Practice1back.Enable = 'on';
+            app.Practice2back.Enable = 'on';
             app.PracticeAll.Enable = 'on';
             app.TestingRun1.Enable = 'on';
             app.TestingRun2.Enable = 'on';
@@ -170,7 +194,14 @@ classdef start_exp < matlab.apps.AppBase
             % initialize buttons
             app.ModifyUser.Visible = 'off';
             app.NewUser.Enable = 'on';
+            app.Practice0back.Enable = 'off';
+            app.PC0back.Visible = 'off';
+            app.Practice1back.Enable = 'off';
+            app.PC1back.Visible = 'off';
+            app.Practice2back.Enable = 'off';
+            app.PC2back.Visible = 'off';
             app.PracticeAll.Enable = 'off';
+            app.PCAll.Visible = 'off';
             app.TestingRun1.Enable = 'off';
             app.TestingRun2.Enable = 'off';
             % create log file path if not existed
@@ -204,9 +235,9 @@ classdef start_exp < matlab.apps.AppBase
         end
 
         % Button pushed function: PracticeAll
-        function PracticeAllButtonPushed2(app, event)
+        function PracticeAllButtonPushed(app, event)
             app.ModifyUser.Visible = 'off';
-            app.practice();
+            app.practice("all");
         end
 
         % Button pushed function: TestingRun1
@@ -251,6 +282,24 @@ classdef start_exp < matlab.apps.AppBase
             end
             delete(app.RegisterUserApp)
             delete(app)
+        end
+
+        % Button pushed function: Practice0back
+        function Practice0backButtonPushed(app, event)
+            app.ModifyUser.Visible = 'off';
+            app.practice("zero-back")
+        end
+
+        % Button pushed function: Practice1back
+        function Practice1backButtonPushed(app, event)
+            app.ModifyUser.Visible = 'off';
+            app.practice("one-back")
+        end
+
+        % Button pushed function: Practice2back
+        function Practice2backButtonPushed(app, event)
+            app.ModifyUser.Visible = 'off';
+            app.practice("two-back")
         end
     end
 
@@ -358,6 +407,7 @@ classdef start_exp < matlab.apps.AppBase
 
             % Create Practice0back
             app.Practice0back = uibutton(app.PracticePanel, 'push');
+            app.Practice0back.ButtonPushedFcn = createCallbackFcn(app, @Practice0backButtonPushed, true);
             app.Practice0back.BackgroundColor = [1 1 1];
             app.Practice0back.FontName = 'SimHei';
             app.Practice0back.FontWeight = 'bold';
@@ -373,6 +423,7 @@ classdef start_exp < matlab.apps.AppBase
 
             % Create Practice1back
             app.Practice1back = uibutton(app.PracticePanel, 'push');
+            app.Practice1back.ButtonPushedFcn = createCallbackFcn(app, @Practice1backButtonPushed, true);
             app.Practice1back.BackgroundColor = [1 1 1];
             app.Practice1back.FontName = 'SimHei';
             app.Practice1back.FontWeight = 'bold';
@@ -388,6 +439,7 @@ classdef start_exp < matlab.apps.AppBase
 
             % Create Practice2back
             app.Practice2back = uibutton(app.PracticePanel, 'push');
+            app.Practice2back.ButtonPushedFcn = createCallbackFcn(app, @Practice2backButtonPushed, true);
             app.Practice2back.BackgroundColor = [1 1 1];
             app.Practice2back.FontName = 'SimHei';
             app.Practice2back.FontWeight = 'bold';
@@ -403,11 +455,11 @@ classdef start_exp < matlab.apps.AppBase
 
             % Create PracticeAll
             app.PracticeAll = uibutton(app.PracticePanel, 'push');
-            app.PracticeAll.ButtonPushedFcn = createCallbackFcn(app, @PracticeAllButtonPushed2, true);
+            app.PracticeAll.ButtonPushedFcn = createCallbackFcn(app, @PracticeAllButtonPushed, true);
             app.PracticeAll.BackgroundColor = [1 1 1];
             app.PracticeAll.FontName = 'SimHei';
             app.PracticeAll.FontWeight = 'bold';
-            app.PracticeAll.FontColor = [1 0 0];
+            app.PracticeAll.FontColor = [0 0 1];
             app.PracticeAll.Tooltip = {'将0-back，1-back和2-back综合在一起练习。'};
             app.PracticeAll.Position = [146 45 69 22];
             app.PracticeAll.Text = '综合';

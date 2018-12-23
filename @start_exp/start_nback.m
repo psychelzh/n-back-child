@@ -1,4 +1,4 @@
-function [status, exception] = start_nback(app, varargin)
+function [status, exception, recordings] = start_nback(app, varargin)
 % Copyright (C) 2018, Liang Zhang - All Rights Reserved.
 % @author      Liang Zhang <psychelzh@outlook.com>
 % @description This script is used to display stimuli in fMRI research
@@ -9,11 +9,11 @@ function [status, exception] = start_nback(app, varargin)
 % ---- check input arguments ----
 p = inputParser;
 expected_parts = ["prac", "test"];
-expected_tasks = ["zero-back", "one-back", "two-back"];
+expected_tasks = ["zero-back", "one-back", "two-back", "all"];
 p.addParameter('Part', 'prac', @(x) any(expected_parts == x))
 p.addParameter('Run', 1, @isnumeric)
 % "Task" param is silently ignored when "Part" param is test
-p.addParameter('Task', [], @(x) any(expected_tasks == x))
+p.addParameter('Task', "all", @(x) any(expected_tasks == x))
 p.parse(varargin{:})
 part = string(p.Results.Part);
 run = p.Results.Run;
@@ -27,8 +27,8 @@ exception = [];
 config = app.init_config(part);
 run_active = config.runs(run);
 % select the specified task when in practice part
-if part == "prac" && ~isempty(task)
-    run_active = run_active([run_active.blocks.name] == task);
+if part == "prac" && task ~= "all"
+    run_active.blocks([run_active.blocks.name] ~= task) = [];
 end
 num_trials_total = sum(cellfun(@length, {run_active.blocks.trials}));
 
@@ -112,11 +112,15 @@ try % error proof programming
         end
     end
     % present a fixation cross to wait user perpared in test part
-    if ~early_exit && part == "test"
-        % test cannot be stopped here
-        DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
-        Screen('Flip', window_ptr);
-        trial_next_start_time_expt = app.TimeWaitStartSecs;
+    if ~early_exit 
+        if part == "test"
+            % test cannot be stopped here
+            DrawFormattedText(window_ptr, '+', 'center', 'center', [0, 0, 0]);
+            Screen('Flip', window_ptr);
+            trial_next_start_time_expt = app.TimeWaitStartSecs;
+        else
+            trial_next_start_time_expt = 0;
+        end
     end
     trial_order = 0;
     % a block contains a task cue and several trials
@@ -125,7 +129,7 @@ try % error proof programming
             break
         end
         % display instruction when separately practicing
-        if part == "prac" && ~isempty(task)
+        if part == "prac" && task ~= "all"
             [instruction_img, ~, instruction_alpha] = ...
                 imread(fullfile(app.ImageFilePath, sprintf('%s.png', block.name)));
             instruction_img(:, :, 4) = instruction_alpha;
@@ -249,6 +253,8 @@ try % error proof programming
                     end
                     if trial.type ~= "filler"
                         resp_acc = double(resp == trial.cresp);
+                    else
+                        resp_acc = nan;
                     end
                 end
                 % if practice, give feedback
