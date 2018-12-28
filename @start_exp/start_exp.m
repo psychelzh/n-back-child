@@ -62,19 +62,26 @@ classdef start_exp < matlab.apps.AppBase
             app.UserPracticedTimes = 0;
             app.UserIsTestedRun1 = false;
             app.UserIsTestedRun2 = false;
-            % initialize user information labels
+            % initialize user information panel
             app.ValueUserId.Text = '´ýÂ¼Èë';
             app.ValueUserName.Text = '´ýÂ¼Èë';
             app.ValueUserSex.Text = '´ýÂ¼Èë';
-            % disable all the practice and test
+            app.NewUser.Enable = 'on';
+            app.ModifyUser.Visible = 'off';
+            % initialize practice panel
             app.Practice0back.BackgroundColor = 'white';
             app.Practice0back.Enable = 'off';
+            app.PC0back.Visible = 'off';
             app.Practice1back.BackgroundColor = 'white';
             app.Practice1back.Enable = 'off';
+            app.PC1back.Visible = 'off';
             app.Practice2back.BackgroundColor = 'white';
             app.Practice2back.Enable = 'off';
+            app.PC2back.Visible = 'off';
             app.PracticeAll.BackgroundColor = 'white';
             app.PracticeAll.Enable = 'off';
+            app.PCAll.Visible = 'off';
+            % initialize testing panel
             app.TestingRun1.BackgroundColor = 'white';
             app.TestingRun1.Enable = 'off';
             app.TestingRun2.BackgroundColor = 'white';
