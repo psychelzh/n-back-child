@@ -81,20 +81,19 @@ classdef start_exp < matlab.apps.AppBase
         function practice(app, task)
             [status, exception, recordings] = ...
                 app.start_nback('Part', "prac", 'Task', task);
-            calling_button = 'PracticeAll';
-            accuracy_label = 'PCAll';
-            if ~isempty(task)
-                switch task
-                    case "zero-back"
-                        calling_button = 'Practice0back';
-                        accuracy_label = 'PC0back';
-                    case "one-back"
-                        calling_button = 'Practice1back';
-                        accuracy_label = 'PC1back';
-                    case "two-back"
-                        calling_button = 'Practice2back';
-                        accuracy_label = 'PC2back';
-                end
+            switch task
+                case "zero-back"
+                    calling_button = 'Practice0back';
+                    accuracy_label = 'PC0back';
+                case "one-back"
+                    calling_button = 'Practice1back';
+                    accuracy_label = 'PC1back';
+                case "two-back"
+                    calling_button = 'Practice2back';
+                    accuracy_label = 'PC2back';
+                case "all"
+                    calling_button = 'PracticeAll';
+                    accuracy_label = 'PCAll';
             end
             if status ~= 0
                 app.(calling_button).BackgroundColor = 'red';
