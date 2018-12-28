@@ -27,16 +27,6 @@ classdef start_exp < matlab.apps.AppBase
     end
 
     
-    properties (Access = private)
-        RegisterUserApp % user register app
-        UserRegisterTime % time of registering
-        UserIsRegistered = false; % indicate user is registered
-        UserPracticedTimes = 0; % how many times user is practiced
-        UserIsTestedRun1 = false; % test run 1 is completed
-        UserIsTestedRun2 = false; % test run 2 is completed
-        LogFileName; % name of file to log result data
-    end
-    
     properties (Access = private, Constant)
         % experiment-related properties
         ExperimentName = 'NBack';
@@ -55,27 +45,49 @@ classdef start_exp < matlab.apps.AppBase
         LogFilePath = 'logs'; % path of file to log result data
     end
     
+    properties (Access = private)
+        RegisterUserApp % user register app
+        UserRegisterTime % time of registering
+        UserIsRegistered % indicate user is registered
+        UserPracticedTimes % how many times user is practiced
+        UserIsTestedRun1 % test run 1 is completed
+        UserIsTestedRun2 % test run 2 is completed
+        LogFileName % name of file to log result data
+    end
+    
     methods (Access = private)
-        % prepare for new user creation
-        function initializeUserCreation(app)
-            % deregister current user
+        function initialize(app)
+            % initialize properties
             app.UserIsRegistered = false;
             app.UserPracticedTimes = 0;
             app.UserIsTestedRun1 = false;
             app.UserIsTestedRun2 = false;
+            % initialize user information labels
             app.ValueUserId.Text = '´ýÂ¼Èë';
             app.ValueUserName.Text = '´ýÂ¼Èë';
             app.ValueUserSex.Text = '´ýÂ¼Èë';
-            app.LogFileName = [];
-            % disable all the buttons
-            app.ModifyUser.Visible = 'off';
-            app.NewUser.Enable = 'off';
+            % disable all the practice and test
+            app.Practice0back.BackgroundColor = 'white';
+            app.Practice0back.Enable = 'off';
+            app.Practice1back.BackgroundColor = 'white';
+            app.Practice1back.Enable = 'off';
+            app.Practice2back.BackgroundColor = 'white';
+            app.Practice2back.Enable = 'off';
             app.PracticeAll.BackgroundColor = 'white';
             app.PracticeAll.Enable = 'off';
             app.TestingRun1.BackgroundColor = 'white';
             app.TestingRun1.Enable = 'off';
             app.TestingRun2.BackgroundColor = 'white';
             app.TestingRun2.Enable = 'off';
+        end
+        function getready(app)
+            % enable practice and testing
+            app.Practice0back.Enable = 'on';
+            app.Practice1back.Enable = 'on';
+            app.Practice2back.Enable = 'on';
+            app.PracticeAll.Enable = 'on';
+            app.TestingRun1.Enable = 'on';
+            app.TestingRun2.Enable = 'on';
         end
         % process practice part
         function practice(app, task)
@@ -182,12 +194,7 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.Enable = 'on';
             app.ModifyUser.Visible = 'on';
             % enable testing now
-            app.Practice0back.Enable = 'on';
-            app.Practice1back.Enable = 'on';
-            app.Practice2back.Enable = 'on';
-            app.PracticeAll.Enable = 'on';
-            app.TestingRun1.Enable = 'on';
-            app.TestingRun2.Enable = 'on';
+            app.getready();
         end
     end
 
@@ -195,19 +202,8 @@ classdef start_exp < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            % initialize buttons
-            app.ModifyUser.Visible = 'off';
-            app.NewUser.Enable = 'on';
-            app.Practice0back.Enable = 'off';
-            app.PC0back.Visible = 'off';
-            app.Practice1back.Enable = 'off';
-            app.PC1back.Visible = 'off';
-            app.Practice2back.Enable = 'off';
-            app.PC2back.Visible = 'off';
-            app.PracticeAll.Enable = 'off';
-            app.PCAll.Visible = 'off';
-            app.TestingRun1.Enable = 'off';
-            app.TestingRun2.Enable = 'off';
+            % initialization jobs
+            app.initialize();
             % create log file path if not existed
             if ~exist(app.LogFilePath, 'dir')
                 mkdir(app.LogFilePath)
@@ -224,7 +220,7 @@ classdef start_exp < matlab.apps.AppBase
                     return
                 end
             end
-            app.initializeUserCreation();
+            app.initialize();
             app.RegisterUserApp = register_user(app);
         end
 
@@ -234,7 +230,7 @@ classdef start_exp < matlab.apps.AppBase
             user.Identifier = str2double(app.ValueUserId.Text);
             user.Name = app.ValueUserName.Text;
             user.Sex = app.ValueUserSex.Text;
-            app.initializeUserCreation();
+            app.initialize();
             app.RegisterUserApp = register_user(app, user);
         end
 
