@@ -316,7 +316,7 @@ classdef start_exp < matlab.apps.AppBase
             app.MainUI = uifigure;
             app.MainUI.AutoResizeChildren = 'off';
             app.MainUI.Color = [0.902 0.902 0.902];
-            app.MainUI.Position = [100 100 600 561];
+            app.MainUI.Position = [100 100 600 550];
             app.MainUI.Name = '测验向导';
             app.MainUI.Resize = 'off';
             app.MainUI.CloseRequestFcn = createCallbackFcn(app, @MainUICloseRequest, true);
@@ -329,7 +329,7 @@ classdef start_exp < matlab.apps.AppBase
             app.UserPanel.Title = '当前被试';
             app.UserPanel.FontName = 'SimHei';
             app.UserPanel.FontWeight = 'bold';
-            app.UserPanel.Position = [171 342 260 180];
+            app.UserPanel.Position = [171 331 260 180];
 
             % Create LabelUserId
             app.LabelUserId = uilabel(app.UserPanel);
@@ -406,7 +406,7 @@ classdef start_exp < matlab.apps.AppBase
             app.PracticePanel.Title = '练习部分';
             app.PracticePanel.FontName = 'SimHei';
             app.PracticePanel.FontWeight = 'bold';
-            app.PracticePanel.Position = [121 142 360 180];
+            app.PracticePanel.Position = [121 131 360 180];
 
             % Create Practice0back
             app.Practice0back = uibutton(app.PracticePanel, 'push');
@@ -482,7 +482,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingPanel.Title = '正式测试';
             app.TestingPanel.FontName = 'SimHei';
             app.TestingPanel.FontWeight = 'bold';
-            app.TestingPanel.Position = [171 42 260 80];
+            app.TestingPanel.Position = [171 41 260 70];
 
             % Create TestingRun1
             app.TestingRun1 = uibutton(app.TestingPanel, 'push');
@@ -490,7 +490,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingRun1.BackgroundColor = [1 1 1];
             app.TestingRun1.FontName = 'SimHei';
             app.TestingRun1.FontWeight = 'bold';
-            app.TestingRun1.Position = [50 22 60 22];
+            app.TestingRun1.Position = [50 12 60 22];
             app.TestingRun1.Text = '第一次';
 
             % Create TestingRun2
@@ -499,7 +499,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingRun2.BackgroundColor = [1 1 1];
             app.TestingRun2.FontName = 'SimHei';
             app.TestingRun2.FontWeight = 'bold';
-            app.TestingRun2.Position = [160 22 60 22];
+            app.TestingRun2.Position = [160 12 60 22];
             app.TestingRun2.Text = '第二次';
         end
     end
