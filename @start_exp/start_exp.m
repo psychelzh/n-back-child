@@ -27,16 +27,6 @@ classdef start_exp < matlab.apps.AppBase
     end
 
     
-    properties (Access = private)
-        RegisterUserApp % user register app
-        UserRegisterTime % time of registering
-        UserIsRegistered = false; % indicate user is registered
-        UserPracticedTimes = 0; % how many times user is practiced
-        UserIsTestedRun1 = false; % test run 1 is completed
-        UserIsTestedRun2 = false; % test run 2 is completed
-        LogFileName; % name of file to log result data
-    end
-    
     properties (Access = private, Constant)
         % experiment-related properties
         ExperimentName = 'NBack';
@@ -55,46 +45,74 @@ classdef start_exp < matlab.apps.AppBase
         LogFilePath = 'logs'; % path of file to log result data
     end
     
+    properties (Access = private)
+        RegisterUserApp % user register app
+        UserRegisterTime % time of registering
+        UserIsRegistered % indicate user is registered
+        UserPracticedTimes % how many times user is practiced
+        UserIsTestedRun1 % test run 1 is completed
+        UserIsTestedRun2 % test run 2 is completed
+        LogFileName % name of file to log result data
+    end
+    
     methods (Access = private)
-        % prepare for new user creation
-        function initializeUserCreation(app)
-            % deregister current user
+        function initialize(app)
+            % initialize properties
             app.UserIsRegistered = false;
             app.UserPracticedTimes = 0;
             app.UserIsTestedRun1 = false;
             app.UserIsTestedRun2 = false;
+            % initialize user information panel
             app.ValueUserId.Text = '待录入';
             app.ValueUserName.Text = '待录入';
             app.ValueUserSex.Text = '待录入';
-            app.LogFileName = [];
-            % disable all the buttons
+            app.NewUser.Enable = 'on';
             app.ModifyUser.Visible = 'off';
-            app.NewUser.Enable = 'off';
+            % initialize practice panel
+            app.Practice0back.BackgroundColor = 'white';
+            app.Practice0back.Enable = 'off';
+            app.PC0back.Visible = 'off';
+            app.Practice1back.BackgroundColor = 'white';
+            app.Practice1back.Enable = 'off';
+            app.PC1back.Visible = 'off';
+            app.Practice2back.BackgroundColor = 'white';
+            app.Practice2back.Enable = 'off';
+            app.PC2back.Visible = 'off';
             app.PracticeAll.BackgroundColor = 'white';
             app.PracticeAll.Enable = 'off';
+            app.PCAll.Visible = 'off';
+            % initialize testing panel
             app.TestingRun1.BackgroundColor = 'white';
             app.TestingRun1.Enable = 'off';
             app.TestingRun2.BackgroundColor = 'white';
             app.TestingRun2.Enable = 'off';
         end
+        function getready(app)
+            % enable practice and testing
+            app.Practice0back.Enable = 'on';
+            app.Practice1back.Enable = 'on';
+            app.Practice2back.Enable = 'on';
+            app.PracticeAll.Enable = 'on';
+            app.TestingRun1.Enable = 'on';
+            app.TestingRun2.Enable = 'on';
+        end
         % process practice part
         function practice(app, task)
             [status, exception, recordings] = ...
                 app.start_nback('Part', "prac", 'Task', task);
-            calling_button = 'PracticeAll';
-            accuracy_label = 'PCAll';
-            if ~isempty(task)
-                switch task
-                    case "zero-back"
-                        calling_button = 'Practice0back';
-                        accuracy_label = 'PC0back';
-                    case "one-back"
-                        calling_button = 'Practice1back';
-                        accuracy_label = 'PC1back';
-                    case "two-back"
-                        calling_button = 'Practice2back';
-                        accuracy_label = 'PC2back';
-                end
+            switch task
+                case "zero-back"
+                    calling_button = 'Practice0back';
+                    accuracy_label = 'PC0back';
+                case "one-back"
+                    calling_button = 'Practice1back';
+                    accuracy_label = 'PC1back';
+                case "two-back"
+                    calling_button = 'Practice2back';
+                    accuracy_label = 'PC2back';
+                case "all"
+                    calling_button = 'PracticeAll';
+                    accuracy_label = 'PCAll';
             end
             if status ~= 0
                 app.(calling_button).BackgroundColor = 'red';
@@ -183,12 +201,7 @@ classdef start_exp < matlab.apps.AppBase
             app.NewUser.Enable = 'on';
             app.ModifyUser.Visible = 'on';
             % enable testing now
-            app.Practice0back.Enable = 'on';
-            app.Practice1back.Enable = 'on';
-            app.Practice2back.Enable = 'on';
-            app.PracticeAll.Enable = 'on';
-            app.TestingRun1.Enable = 'on';
-            app.TestingRun2.Enable = 'on';
+            app.getready();
         end
     end
 
@@ -196,19 +209,8 @@ classdef start_exp < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            % initialize buttons
-            app.ModifyUser.Visible = 'off';
-            app.NewUser.Enable = 'on';
-            app.Practice0back.Enable = 'off';
-            app.PC0back.Visible = 'off';
-            app.Practice1back.Enable = 'off';
-            app.PC1back.Visible = 'off';
-            app.Practice2back.Enable = 'off';
-            app.PC2back.Visible = 'off';
-            app.PracticeAll.Enable = 'off';
-            app.PCAll.Visible = 'off';
-            app.TestingRun1.Enable = 'off';
-            app.TestingRun2.Enable = 'off';
+            % initialization jobs
+            app.initialize();
             % create log file path if not existed
             if ~exist(app.LogFilePath, 'dir')
                 mkdir(app.LogFilePath)
@@ -225,7 +227,7 @@ classdef start_exp < matlab.apps.AppBase
                     return
                 end
             end
-            app.initializeUserCreation();
+            app.initialize();
             app.RegisterUserApp = register_user(app);
         end
 
@@ -235,7 +237,7 @@ classdef start_exp < matlab.apps.AppBase
             user.Identifier = str2double(app.ValueUserId.Text);
             user.Name = app.ValueUserName.Text;
             user.Sex = app.ValueUserSex.Text;
-            app.initializeUserCreation();
+            app.initialize();
             app.RegisterUserApp = register_user(app, user);
         end
 
@@ -314,7 +316,7 @@ classdef start_exp < matlab.apps.AppBase
             app.MainUI = uifigure;
             app.MainUI.AutoResizeChildren = 'off';
             app.MainUI.Color = [0.902 0.902 0.902];
-            app.MainUI.Position = [100 100 600 561];
+            app.MainUI.Position = [100 100 600 550];
             app.MainUI.Name = '测验向导';
             app.MainUI.Resize = 'off';
             app.MainUI.CloseRequestFcn = createCallbackFcn(app, @MainUICloseRequest, true);
@@ -327,7 +329,7 @@ classdef start_exp < matlab.apps.AppBase
             app.UserPanel.Title = '当前被试';
             app.UserPanel.FontName = 'SimHei';
             app.UserPanel.FontWeight = 'bold';
-            app.UserPanel.Position = [171 342 260 180];
+            app.UserPanel.Position = [171 331 260 180];
 
             % Create LabelUserId
             app.LabelUserId = uilabel(app.UserPanel);
@@ -404,7 +406,7 @@ classdef start_exp < matlab.apps.AppBase
             app.PracticePanel.Title = '练习部分';
             app.PracticePanel.FontName = 'SimHei';
             app.PracticePanel.FontWeight = 'bold';
-            app.PracticePanel.Position = [121 142 360 180];
+            app.PracticePanel.Position = [121 131 360 180];
 
             % Create Practice0back
             app.Practice0back = uibutton(app.PracticePanel, 'push');
@@ -480,7 +482,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingPanel.Title = '正式测试';
             app.TestingPanel.FontName = 'SimHei';
             app.TestingPanel.FontWeight = 'bold';
-            app.TestingPanel.Position = [171 42 260 80];
+            app.TestingPanel.Position = [171 41 260 70];
 
             % Create TestingRun1
             app.TestingRun1 = uibutton(app.TestingPanel, 'push');
@@ -488,7 +490,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingRun1.BackgroundColor = [1 1 1];
             app.TestingRun1.FontName = 'SimHei';
             app.TestingRun1.FontWeight = 'bold';
-            app.TestingRun1.Position = [50 22 60 22];
+            app.TestingRun1.Position = [50 12 60 22];
             app.TestingRun1.Text = '第一次';
 
             % Create TestingRun2
@@ -497,7 +499,7 @@ classdef start_exp < matlab.apps.AppBase
             app.TestingRun2.BackgroundColor = [1 1 1];
             app.TestingRun2.FontName = 'SimHei';
             app.TestingRun2.FontWeight = 'bold';
-            app.TestingRun2.Position = [160 22 60 22];
+            app.TestingRun2.Position = [160 12 60 22];
             app.TestingRun2.Text = '第二次';
         end
     end

@@ -96,7 +96,7 @@ classdef register_user < matlab.apps.AppBase
             % Create UserRegUI
             app.UserRegUI = uifigure;
             app.UserRegUI.AutoResizeChildren = 'off';
-            app.UserRegUI.Position = [200 175 400 250];
+            app.UserRegUI.Position = [200 250 400 250];
             app.UserRegUI.Name = 'Â¼ÈëÓÃ»§';
             app.UserRegUI.Resize = 'off';
             app.UserRegUI.CloseRequestFcn = createCallbackFcn(app, @UserRegUICloseRequest, true);
