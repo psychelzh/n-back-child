@@ -236,7 +236,6 @@ try % error proof programming
                 if ~resp_made
                     resp = "";
                     resp_raw = "";
-                    resp_acc = -1;
                     resp_time = 0;
                 else
                     resp_time = resp_timestamp - stim_onset_timestamp;
@@ -251,11 +250,15 @@ try % error proof programming
                     else
                         resp = "Right";
                     end
-                    if trial.type ~= "filler"
+                end
+                if trial.type ~= "filler"
+                    if resp ~= ""
                         resp_acc = double(resp == trial.cresp);
                     else
-                        resp_acc = nan;
+                        resp_acc = -1;
                     end
+                else
+                    resp_acc = nan;
                 end
                 % if practice, give feedback
                 if part == "prac"
